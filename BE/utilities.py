@@ -24,8 +24,31 @@ def str_to_point(s):
     x, y = map(float, s.strip("()").split(","))
     return Point(x, y)
 
+def calculate_max_distance(building_geom, garden_geom):
+    if isinstance(building_geom, Point):
+        # Calculate distance from the building point to all garden vertices
+        return max(building_geom.distance(garden_geom.exterior))
+    
+    # Calculate distance from the building's bounding box to the garden's bounding box
+    building_bbox = building_geom.bounds
+    garden_bbox = garden_geom.bounds
+    
+    # Calculate distances from each corner of the building bbox to each corner of the garden bbox
+    distances = [
+        building_geom.distance(Point(gx, gy))
+        for gx in [garden_bbox[0], garden_bbox[2]]  # xmin, xmax
+        for gy in [garden_bbox[1], garden_bbox[3]]  # ymin, ymax
+    ]
+    
+    return max(distances)
+
 def calculate_distance(building, garden):
-    # Calculate distance between building and garden centroids
-    building_centroid = building.geometry.centroid.coords[0]
-    garden_centroid = garden.geometry.centroid.coords[0]
-    return geopy.distance.distance(building_centroid, garden_centroid).km
+    return building.distance(garden)
+
+def calculate_min_distance(building_geom, garden_geom):
+    if isinstance(building_geom, Point):
+        # Calculate distance from the building point to the garden centroid
+        return building_geom.distance(garden_geom.centroid)
+    else:
+        # Calculate distance from the building centroid to the garden centroid
+        return building_geom.centroid.distance(garden_geom.centroid)

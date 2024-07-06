@@ -56,7 +56,7 @@ def import_buildings(selected_polygon):
 
 def import_land_designations(selected_polygon):
     # Load the shapefile
-    land_designations_path = 'BE\land_designations\GPL0.shp'  
+    land_designations_path = 'land_designations\GPL0.shp'  
     data = gpd.read_file(land_designations_path)
     
     # Filter data for 'שטח ציבורי פתוח'

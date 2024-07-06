@@ -1,6 +1,5 @@
 from import_data import *
-from greedy_algorithm import allocate_buildings_to_gardens
-#TODO: for debugging
+from greedy_algorithm import allocate_buildings_to_gardens_centroid, allocate_buildings_to_gardens_min_max
 
 # Bounding box coordinates
 xmin = 216147.29618823092
@@ -14,7 +13,21 @@ buildings_gdf = import_buildings(polygon)
 gardens_gdf = import_land_designations(polygon)
 
 # Allocate buildings to gardens
-buildings_gdf, gardens_gdf = allocate_buildings_to_gardens(buildings_gdf, gardens_gdf)
+buildings_gdf, gardens_gdf = allocate_buildings_to_gardens_centroid(buildings_gdf, gardens_gdf)
+print("Buildings DataFrame:")
+print(buildings_gdf)
+print("\nGardens DataFrame:")
+print(gardens_gdf)
+
+# Allocate buildings to gardens
+buildings_gdf, gardens_gdf = allocate_buildings_to_gardens_min_max(buildings_gdf, gardens_gdf, 'min')
+print("Buildings DataFrame:")
+print(buildings_gdf)
+print("\nGardens DataFrame:")
+print(gardens_gdf)
+
+# Allocate buildings to gardens
+buildings_gdf, gardens_gdf = allocate_buildings_to_gardens_min_max(buildings_gdf, gardens_gdf, 'max')
 print("Buildings DataFrame:")
 print(buildings_gdf)
 print("\nGardens DataFrame:")
