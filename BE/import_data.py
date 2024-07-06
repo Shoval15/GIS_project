@@ -6,9 +6,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import json
 import pandas as pd
-from shapely.geometry import  Polygon
+from shapely.geometry import  Polygon, box
 from utilities import convert_to_wgs84
-    
+import networkx as nx
+import osmnx as ox
+
+
 def make_arcgis_query_selenium(xmin, ymin, xmax, ymax):
     # Set up Chrome options
     chrome_options = Options()
@@ -56,7 +59,7 @@ def import_buildings(selected_polygon):
 
 def import_land_designations(selected_polygon):
     # Load the shapefile
-    land_designations_path = 'land_designations\GPL0.shp'  
+    land_designations_path = r'land_designations\GPL0.shp'
     data = gpd.read_file(land_designations_path)
     
     # Filter data for 'שטח ציבורי פתוח'
@@ -73,3 +76,31 @@ def import_land_designations(selected_polygon):
 
     return filtered_gardens_gdf
 
+def import_walking_paths(selected_polygon):
+    selected_polygon = convert_to_wgs84(selected_polygon)
+    # Calculate bounding box (xmin, ymin, xmax, ymax)
+    minx, miny, maxx, maxy = selected_polygon.bounds
+    
+    mode = 'walk'
+
+    # Create the graph of the area from OSM data. It will download the data and create the graph
+    G = ox.graph_from_bbox( maxx, minx, maxy, miny, network_type=mode)
+
+    # OSM data are sometime incomplete so we use the speed module of osmnx to add missing edge speeds and travel times
+    G = ox.add_edge_speeds(G)
+    G = ox.add_edge_travel_times(G)
+
+    return G
+    fig, ax = ox.plot_graph(G, figsize=(10, 10), node_size=0, edge_color='y', edge_linewidth=0.2)
+
+    # find the shortest path (by distance)
+    # between these nodes then plot it
+    orig = list(G)[8]
+    dest = list(G)[50]
+
+    # find k-shortest path
+    routes = ox.routing.shortest_path(G, orig, dest, weight="length")
+    print(routes)
+    # plot the shortes path
+    fig, ax = ox.plot_graph_route(G, routes, route_color="r", 
+                              route_linewidth=6, node_size=0)
