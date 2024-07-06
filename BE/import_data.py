@@ -18,7 +18,7 @@ def make_arcgis_query_selenium(xmin, ymin, xmax, ymax):
         
     try:
         # Navigate to the URL
-        url = f"https://gisviewer.jerusalem.muni.il/arcgis/rest/services/BaseLayers/MapServer/30/query?where=1%3D1&text=&objectIds=&time=&geometry=%7B%22xmin%22%3A{xmin}%2C%22ymin%22%3A{ymin}%2C%22xmax%22%3A{xmax}%2C%22ymax%22%3A{ymax}%7D&geometryType=esriGeometryEnvelope&inSR=%7B%22wkid%22%3A2039%2C%22latestWkid%22%3A2039%7D&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&returnTrueCurves=false&resultOffset=&resultRecordCount=&f=json"
+        url = f"https://gisviewer.jerusalem.muni.il/arcgis/rest/services/BaseLayers/MapServer/30/query?where=1%3D1&text=&objectIds=&time=&geometry=%7B%22xmin%22%3A{xmin}%2C%22ymin%22%3A{ymin}%2C%22xmax%22%3A{xmax}%2C%22ymax%22%3A{ymax}%7D&geometryType=esriGeometryEnvelope&inSR=%7B%22wkid%22%3A2039%2C%22latestWkid%22%3A2039%7D&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=OBJECTID%2CSTRT_CODE1%2CStreetName1%2CBLDG_NUM%2CBLDG_TYPE%2CBLDG_CH%2CNUM_FLOORS%2CNUM_ENTR%2CNUM_APTS_C%2Clayer%2CSTRT_CODE2%2CStreetName2%2CShape%2CShape.STArea%28%29%2CShape.STLength%28%29&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&returnTrueCurves=false&resultOffset=&resultRecordCount=&f=json"
         driver.get(url)
         # Get the inner text of the HTML body
         WebDriverWait(driver, 10).until(
@@ -38,8 +38,8 @@ def make_arcgis_query_selenium(xmin, ymin, xmax, ymax):
 
 def import_buildings(selected_polygon):
     # Calculate bounding box (xmin, ymin, xmax, ymax)
-    xmin, ymin, xmax, ymax = selected_polygon.bounds
-    json_res = make_arcgis_query_selenium(xmin, ymin, xmax, ymax)
+    minx, miny, maxx, maxy = selected_polygon.bounds
+    json_res = make_arcgis_query_selenium(minx, miny, maxx, maxy)
     features = json_res['features']
     attributes = [feature['attributes'] for feature in features]
     geometries = [feature['geometry']['rings'][0] for feature in features]
@@ -56,13 +56,12 @@ def import_buildings(selected_polygon):
 
 def import_land_designations(selected_polygon):
     # Load the shapefile
-    land_designations_path = 'land_designations/GPL0.shp'  
+    land_designations_path = 'BE\land_designations\GPL0.shp'  
     data = gpd.read_file(land_designations_path)
     
     # Filter data for 'שטח ציבורי פתוח'
     gardens_data = data[data['MAVAT_NAME'] == 'שטח ציבורי פתוח']
     gardens_gdf = gpd.GeoDataFrame(gardens_data, geometry='geometry')
-    
     # Ensure selected_polygon is a GeoSeries if it isn't already
     if not isinstance(selected_polygon, gpd.GeoSeries):
         selected_polygon = gpd.GeoSeries([selected_polygon])
@@ -70,11 +69,7 @@ def import_land_designations(selected_polygon):
     # Filter gardens_gdf to only include those within the selected_polygon
     filtered_gardens_gdf = gardens_gdf[gardens_gdf.geometry.within(selected_polygon.unary_union)]
     filtered_gardens_gdf['geometry'] = filtered_gardens_gdf['geometry'].apply(convert_to_wgs84)
+    filtered_gardens_gdf['OBJECTID'] = filtered_gardens_gdf.index
 
     return filtered_gardens_gdf
 
-#TODO: for debugging
-polygon_coords = [(31.736, 35.177), (31.736, 35.177), (31.736, 35.177)] 
-# Create a Shapely Polygon object
-polygon = Polygon(polygon_coords)
-import_buildings(polygon)

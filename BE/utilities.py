@@ -1,5 +1,6 @@
 import pyproj
 from shapely.geometry import Point, Polygon
+import geopy.distance
 
 # Define the transformer from Israel TM to WGS84 (latitude and longitude)
 transformer = pyproj.Transformer.from_proj(
@@ -22,3 +23,9 @@ def convert_to_wgs84(geometry):
 def str_to_point(s):
     x, y = map(float, s.strip("()").split(","))
     return Point(x, y)
+
+def calculate_distance(building, garden):
+    # Calculate distance between building and garden centroids
+    building_centroid = building.geometry.centroid.coords[0]
+    garden_centroid = garden.geometry.centroid.coords[0]
+    return geopy.distance.distance(building_centroid, garden_centroid).km
