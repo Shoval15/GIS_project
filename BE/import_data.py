@@ -82,7 +82,6 @@ def import_walking_paths(selected_polygon):
     minx, miny, maxx, maxy = selected_polygon.bounds
     
     mode = 'walk'
-
     # Create the graph of the area from OSM data. It will download the data and create the graph
     G = ox.graph_from_bbox( maxx, minx, maxy, miny, network_type=mode)
 
