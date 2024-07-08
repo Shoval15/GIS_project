@@ -1,0 +1,8 @@
+Flask
+geopandas
+pandas
+selenium
+shapely
+osmnx
+flask_cors
+geopy
