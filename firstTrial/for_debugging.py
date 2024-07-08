@@ -1,5 +1,5 @@
 from import_data import *
-import greedy_algorithm
+import firstTrial.greedy_algorithm as greedy_algorithm
 import greedy_algorithm_topo
 import knapsack_problem
 # Bounding box coordinates
