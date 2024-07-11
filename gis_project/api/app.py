@@ -20,14 +20,15 @@ def get_bounds():
     polygon = Polygon([(sw['lng'], sw['lat']), (ne['lng'], sw['lat']),
                        (ne['lng'], ne['lat']), (sw['lng'], ne['lat'])])
     # polygon = utilities.convert_bounds_to_israel_tm(data)
-    print(polygon)
     buildings_gdf = import_data.import_buildings(polygon)
     gardens_gdf = import_data.import_land_designations(polygon)
     walking_paths = import_data.import_walking_paths(polygon)
-    print("Received bounds:", data)
-    print(buildings_gdf)
-    print(gardens_gdf)
-    print(walking_paths)
+    allocated_gdf, not_allocated_gdf, updated_gardens_gdf = greedy_algorithm_topo.garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths)
+    print("Allocated buildings:")
+    print(allocated_gdf)
+    print("\nNot allocated buildings:")
+    print(not_allocated_gdf)
+    utilization = greedy_algorithm_topo.get_utilization(buildings_gdf, allocated_gdf)
     return jsonify({"status": "success", "received": data})
 
 if __name__ == '__main__':

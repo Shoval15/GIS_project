@@ -6,3 +6,4 @@ shapely
 osmnx
 flask_cors
 geopy
+scikit-learn
