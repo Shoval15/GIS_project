@@ -1,27 +1,15 @@
-from . import distance_walk
-import geopandas as gpd
 import numpy as np
+from . import utilities 
 
 def preprocess_data(buildings_gdf, gardens_gdf, G):
     # Calculate garden capacities
     gardens_gdf['capacity'] = (gardens_gdf['Shape_STAr'] / 1000 * 90).fillna(0).astype(int)
     gardens_gdf['remaining_capacity'] = gardens_gdf['capacity']
-    
     # Calculate distances between gardens and buildings
-    gardens_gdf['nearby_buildings'] = gardens_gdf.apply(lambda x: find_nearby_buildings(x, buildings_gdf, G), axis=1)
-    
+    gardens_gdf['nearby_buildings'] = gardens_gdf.apply(lambda x: utilities.find_nearby_buildings(x, buildings_gdf, G), axis=1)
     # Handle NA and inf values in NUM_APTS_C
     buildings_gdf['NUM_APTS_C'] = buildings_gdf['NUM_APTS_C'].fillna(0).replace([np.inf, -np.inf], 0).astype(int)
-    
     return buildings_gdf, gardens_gdf
-
-def find_nearby_buildings(garden, buildings_gdf, G):
-    distances = []
-    for _, building in buildings_gdf.iterrows():
-        dist = distance_walk.calculate_walk_distance(G, garden.geometry.centroid, building.geometry.centroid)
-        if dist <= 0.93 and building['NUM_APTS_C'] > 0:
-            distances.append((building['OBJECTID'], dist, building['NUM_APTS_C']))
-    return sorted(distances, key=lambda x: x[1])  # Sort by distance
 
 # Implements the 0/1 knapsack algorithm to optimally allocate buildings to a garden
 def knapsack_garden_allocation(garden, buildings):
@@ -30,13 +18,13 @@ def knapsack_garden_allocation(garden, buildings):
     
     # Filter out buildings with zero apartments
     valid_buildings = [b for b in buildings if int(b[2]) > 0]
-    n = len(valid_buildings)
+    valid_buildings_amounts = len(valid_buildings)
     
     # Create a 2D array for dynamic programming - dp[i][w] represents the maximum number of apartments that can be allocated
-    dp = [[0 for _ in range(capacity + 1)] for _ in range(n + 1)]
+    dp = [[0 for _ in range(capacity + 1)] for _ in range(valid_buildings_amounts + 1)]
     
     # Fill the dp table
-    for i in range(1, n + 1):
+    for i in range(1, valid_buildings_amounts + 1):
         for w in range(1, capacity + 1):
             apartments = int(valid_buildings[i-1][2])
             if apartments <= w:
@@ -47,7 +35,7 @@ def knapsack_garden_allocation(garden, buildings):
     # Backtrack to find the selected buildings
     selected = []
     w = capacity
-    for i in range(n, 0, -1):
+    for i in range(valid_buildings_amounts, 0, -1):
         apartments = int(valid_buildings[i-1][2])
         if dp[i][w] != dp[i-1][w]:
             selected.append(valid_buildings[i-1])
@@ -80,7 +68,7 @@ def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths):
 
     # Merge allocated buildings with garden information
     allocated_buildings = allocated_buildings.merge(
-        gardens_gdf[['OBJECTID', 'MAVAT_NAME', 'ADDRESS']],
+        gardens_gdf[['OBJECTID', 'ADDRESS']],
         left_on='allocated_garden',
         right_on='OBJECTID',
         suffixes=('_building', '_garden')
@@ -90,17 +78,16 @@ def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths):
     allocated_buildings = allocated_buildings.rename(columns={
         'OBJECTID_building': 'building_id',
         'OBJECTID_garden': 'garden_id',
-        'MAVAT_NAME': 'garden_name',
         'ADDRESS': 'garden_address'
     })
 
     allocated_buildings = allocated_buildings[[
-        'building_id', 'BLDG_NUM', 'BLDG_TYPE', 'NUM_APTS_C', 'StreetName1',
-        'garden_id', 'garden_name', 'garden_address', 'geometry'
+        'building_id', 'NUM_APTS_C',
+        'garden_id', 'garden_address', 'geometry'
     ]]
 
     not_allocated_buildings = not_allocated_buildings[[
-        'OBJECTID', 'BLDG_NUM', 'BLDG_TYPE', 'NUM_APTS_C', 'StreetName1', 'geometry'
+        'OBJECTID', 'NUM_APTS_C', 'geometry'
     ]]
 
     return allocated_buildings, not_allocated_buildings

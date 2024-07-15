@@ -4,21 +4,15 @@ import Logo from './Logo';
 import Map from './Map';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-
+import Footer from './Footer';
 function App() {
   return (
     <div className="App">
-      <Navbar bg="light">
-        <Container>
-          <Navbar.Brand>
-            <Logo />
-            My GIS project
-          </Navbar.Brand>
-        </Container>
-      </Navbar>
-      <Container className="mt-3">
+        <Logo />
+        <br></br>
         <Map />
-      </Container>
+        <br></br>
+        <Footer />
     </div>
   );
 }

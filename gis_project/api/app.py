@@ -12,17 +12,24 @@ CORS(app)
 @app.route('/api/bounds', methods=['POST'])
 def get_bounds():
     data = request.json
+    bounds = data['bounds']
+    project_status = data['projectStatus']
+    apartment_type = data['apartmentType']
+    distance = data['distance']
+    
     # Extract coordinates
-    ne = data['northEast']
-    sw = data['southWest']
+    ne = bounds['northEast']
+    sw = bounds['southWest']
     
     # Create a Polygon from the bounds
     polygon = Polygon([(sw['lng'], sw['lat']), (ne['lng'], sw['lat']),
                        (ne['lng'], ne['lat']), (sw['lng'], ne['lat'])])
     # polygon = utilities.convert_bounds_to_israel_tm(data)
     buildings_gdf = import_data.import_buildings(polygon)
+    renewal_gdf = import_data.import_urban_renewal(polygon)
     gardens_gdf = import_data.import_land_designations(polygon)
     walking_paths = import_data.import_walking_paths(polygon)
+
     allocated_gdf, not_allocated_gdf, updated_gardens_gdf = greedy_algorithm_topo.garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths)
     print("Allocated buildings:")
     print(allocated_gdf)

@@ -1,7 +1,6 @@
 import pyproj
 from shapely.geometry import Point, Polygon
-import geopy.distance
-
+from . import distance_walk
 
 # Function to convert a Point or Polygon to WGS84
 def convert_coords(geometry, to='4326'):
@@ -26,15 +25,6 @@ def convert_coords(geometry, to='4326'):
         else:
             exterior_ring = [transformer.transform(y, x) for x, y in geometry.exterior.coords]
         return Polygon(exterior_ring)
-    
-# Function to convert a Polygon from WGS84 to Israel TM
-def convert_polygon_to_israel_tm(polygon):
-    
-
-    exterior_ring = [
-        transformer.transform(y, x) for x, y in polygon.exterior.coords
-    ]
-    return Polygon(exterior_ring)
  
 # Function to convert a string "(x, y)" to a Point object
 def str_to_point(s):
@@ -69,3 +59,11 @@ def calculate_min_distance(building_geom, garden_geom):
     else:
         # Calculate distance from the building centroid to the garden centroid
         return building_geom.centroid.distance(garden_geom.centroid)
+
+def find_nearby_buildings(garden, buildings_gdf, G, max_distance=0.93):
+    distances = []
+    for _, building in buildings_gdf.iterrows():
+        dist = distance_walk.calculate_walk_distance(G, garden.geometry.centroid, building.geometry.centroid)
+        if dist <= max_distance and building['NUM_APTS_C'] > 0:
+            distances.append((building['OBJECTID'], dist, building['NUM_APTS_C']))
+    return sorted(distances, key=lambda x: x[1])  # Sort by distance

@@ -21,7 +21,8 @@ def make_arcgis_query_selenium(xmin, ymin, xmax, ymax):
         
     try:
         # Navigate to the URL
-        url = f"https://gisviewer.jerusalem.muni.il/arcgis/rest/services/BaseLayers/MapServer/30/query?where=1%3D1&text=&objectIds=&time=&geometry=%7B%22xmin%22%3A{xmin}%2C%22ymin%22%3A{ymin}%2C%22xmax%22%3A{xmax}%2C%22ymax%22%3A{ymax}%7D&geometryType=esriGeometryEnvelope&inSR=%7B%22wkid%22%3A2039%2C%22latestWkid%22%3A2039%7D&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=OBJECTID%2CSTRT_CODE1%2CStreetName1%2CBLDG_NUM%2CBLDG_TYPE%2CBLDG_CH%2CNUM_FLOORS%2CNUM_ENTR%2CNUM_APTS_C%2Clayer%2CSTRT_CODE2%2CStreetName2%2CShape%2CShape.STArea%28%29%2CShape.STLength%28%29&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&returnTrueCurves=false&resultOffset=&resultRecordCount=&f=json"
+        url = f"https://gisviewer.jerusalem.muni.il/arcgis/rest/services/BaseLayers/MapServer/370/query?where=1%3D1&text=&objectIds=&time=&geometry=%7B%22xmin%22%3A{xmin}%2C%22ymin%22%3A{ymin}%2C%22xmax%22%3A{xmax}%2C%22ymax%22%3A{ymax}%7D&geometryType=esriGeometryEnvelope&inSR=%7B%22wkid%22%3A2039%2C%22latestWkid%22%3A2039%7D&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=OBJECTID%2CSTRT_CODE1%2CStreetName1%2CBLDG_NUM%2CBLDG_TYPE%2CBLDG_CH%2CNUM_FLOORS%2CNUM_ENTR%2CNUM_APTS_C%2Clayer%2CSTRT_CODE2%2CStreetName2%2CShape%2CShape.STArea%28%29%2CShape.STLength%28%29&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&returnTrueCurves=false&resultOffset=&resultRecordCount=&f=json"
+        print(url)
         driver.get(url)
         # Get the inner text of the HTML body
         WebDriverWait(driver, 10).until(
@@ -90,16 +91,16 @@ def import_walking_paths(selected_polygon):
     G = ox.add_edge_travel_times(G)
 
     return G
-    fig, ax = ox.plot_graph(G, figsize=(10, 10), node_size=0, edge_color='y', edge_linewidth=0.2)
+    # fig, ax = ox.plot_graph(G, figsize=(10, 10), node_size=0, edge_color='y', edge_linewidth=0.2)
 
-    # find the shortest path (by distance)
-    # between these nodes then plot it
-    orig = list(G)[8]
-    dest = list(G)[50]
+    # # find the shortest path (by distance)
+    # # between these nodes then plot it
+    # orig = list(G)[8]
+    # dest = list(G)[50]
 
-    # find k-shortest path
-    routes = ox.routing.shortest_path(G, orig, dest, weight="length")
-    print(routes)
-    # plot the shortes path
-    fig, ax = ox.plot_graph_route(G, routes, route_color="r", 
-                              route_linewidth=6, node_size=0)
+    # # find k-shortest path
+    # routes = ox.routing.shortest_path(G, orig, dest, weight="length")
+    # print(routes)
+    # # plot the shortes path
+    # fig, ax = ox.plot_graph_route(G, routes, route_color="r", 
+    #                           route_linewidth=6, node_size=0)

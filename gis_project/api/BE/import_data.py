@@ -10,22 +10,41 @@ from shapely.geometry import  Polygon
 from . import utilities
 import networkx as nx
 import osmnx as ox
+from urllib.parse import urlencode, quote
 
 
-def make_arcgis_query_selenium(xmin, ymin, xmax, ymax):
+
+def make_arcgis_query_selenium(layer_number, xmin, ymin, xmax, ymax, out_fields="*", where="1=1"):
+    base_url = "https://gisviewer.jerusalem.muni.il/arcgis/rest/services/BaseLayers/MapServer"
     # Set up Chrome options
     chrome_options = Options()
     # chrome_options.add_argument("--headless")
     chrome_options.add_argument("--ignore-certificate-errors")  # Ignore SSL errors
     driver = webdriver.Chrome(options=chrome_options)
-        
+    geometry_dict = json.loads(f'{{"xmin":{xmin},"ymin":{ymin},"xmax":{xmax},"ymax":{ymax}}}')
+    params = {'geometry': json.dumps(geometry_dict)}
+    # Use urlencode to convert the dictionary to a URL-encoded string
+    encoded_geometry = urlencode(params) 
+    encoded_out_fields = quote(out_fields)
+
     try:
-        url = f"https://gisviewer.jerusalem.muni.il/arcgis/rest/services/BaseLayers/MapServer/30/query?where=1%3D1&text=&objectIds=&time=&geometry=%7B%22xmin%22%3A{xmin}%2C%22ymin%22%3A{ymin}%2C%22xmax%22%3A{xmax}%2C%22ymax%22%3A{ymax}%7D&geometryType=esriGeometryEnvelope&inSR=%7B%22wkid%22%3A4326%2C%22latestWkid%22%3A4326%7D&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=OBJECTID%2CSTRT_CODE1%2CStreetName1%2CBLDG_NUM%2CBLDG_TYPE%2CBLDG_CH%2CNUM_FLOORS%2CNUM_ENTR%2CNUM_APTS_C%2Clayer%2CSTRT_CODE2%2CStreetName2%2CShape%2CShape.STArea%28%29%2CShape.STLength%28%29&returnGeometry=true&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&returnTrueCurves=false&resultOffset=&resultRecordCount=&f=json"
+        # Construct the URL with the provided parameters
+        url = (f"{base_url}/{layer_number}/query?"
+               f"where=1%3D1&"
+               f"{encoded_geometry}&"
+               f"geometryType=esriGeometryEnvelope&"
+               f"inSR=%7B%22wkid%22%3A4326%2C%22latestWkid%22%3A4326%7D&"
+               f"spatialRel=esriSpatialRelIntersects&"
+               f"outFields={encoded_out_fields}&"
+               f"returnGeometry=true&"
+               f"outSR=&returnIdsOnly=false&returnCountOnly=false&"
+               f"returnDistinctValues=false&returnTrueCurves=false&"
+               f"f=json")
         driver.get(url)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.TAG_NAME, 'body'))
         )
-        # Find the element containing JSON data (assuming it's within a <pre> tag)
+        # Find the element containing JSON data
         data_element = driver.find_element(By.TAG_NAME, 'body')
         response_text = data_element.text
         data = json.loads(response_text)
@@ -33,12 +52,15 @@ def make_arcgis_query_selenium(xmin, ymin, xmax, ymax):
         return data
 
     finally:
-        driver.quit()  
+        driver.quit()
+
 
 def import_buildings(selected_polygon):
     # Calculate bounding box (xmin, ymin, xmax, ymax)
     minx, miny, maxx, maxy = selected_polygon.bounds
-    json_res = make_arcgis_query_selenium(minx, miny, maxx, maxy)
+    out_fields = "OBJECTID,CID,MAX_rel_he,MAX_med_he,BLDG_NUM_1,BLDG_TYPE_,NUM_FLOORS,NUM_ENTR_1,NUM_APTS_C,semel_bait,StreetName,StreetNa_1,X_1,Y_1,StreetCode,BldNum_1,Shape,Shape.STArea(),Shape.STLength()"
+    # json_res = make_arcgis_query_selenium_old(minx, miny, maxx, maxy)
+    json_res = make_arcgis_query_selenium('370', minx, miny, maxx, maxy, out_fields)
     features = json_res['features']
     attributes = [feature['attributes'] for feature in features]
     geometries = [feature['geometry']['rings'][0] for feature in features]
@@ -49,6 +71,24 @@ def import_buildings(selected_polygon):
     # Set the coordinate reference system (CRS)
     gdf.set_crs(epsg=json_res['spatialReference']['wkid'], inplace=True)
     gdf['geometry'] = gdf['geometry'].apply(utilities.convert_coords)
+    return gdf
+
+def import_urban_renewal(selected_polygon):
+    # Calculate bounding box (xmin, ymin, xmax, ymax)
+    minx, miny, maxx, maxy = selected_polygon.bounds
+    out_fields = "OBJECTID, num, name, maslul, yazam, units_e, units_p, tichnun_s, date, start, info, picture, units_a, status_num, adress, schunah, Shape.STArea(), Shape"
+    json_res = make_arcgis_query_selenium('183', minx, miny, maxx, maxy, out_fields)
+    features = json_res['features']
+    attributes = [feature['attributes'] for feature in features]
+    geometries = [feature['geometry']['rings'][0] for feature in features]
+    # Convert geometries to shapely polygons
+    polygons = [Polygon(geometry) for geometry in geometries]
+    df = pd.DataFrame(attributes)
+    gdf = gpd.GeoDataFrame(df, geometry=polygons)
+    # Set the coordinate reference system (CRS)
+    gdf.set_crs(epsg=json_res['spatialReference']['wkid'], inplace=True)
+    gdf['geometry'] = gdf['geometry'].apply(utilities.convert_coords)
+    gdf.rename(columns={'units_p': 'NUM_APTS_C'}, inplace=True)
     return gdf
 
 def import_land_designations(selected_polygon):
