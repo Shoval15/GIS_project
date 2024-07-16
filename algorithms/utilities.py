@@ -1,24 +1,31 @@
 import pyproj
 from shapely.geometry import Point, Polygon
-import geopy.distance
-
-# Define the transformer from Israel TM to WGS84 (latitude and longitude)
-transformer = pyproj.Transformer.from_proj(
-    pyproj.Proj('epsg:2039'),  # Israel Transverse Mercator
-    pyproj.Proj('epsg:4326'))   # WGS84 (latitude and longitude)
+import distance_walk
 
 # Function to convert a Point or Polygon to WGS84
-def convert_to_wgs84(geometry):
+def convert_coords(geometry, to='4326'):
+    if to == '4326':
+        # Define the transformer from Israel TM to WGS84 (latitude and longitude)
+        transformer = pyproj.Transformer.from_proj(
+            pyproj.Proj('epsg:2039'),  # Israel Transverse Mercator
+            pyproj.Proj('epsg:4326'))   # WGS84 (latitude and longitude)
+    else:
+        # Define the transformer from WGS84 (EPSG:4326) to Israel TM (EPSG:2039)
+        transformer = pyproj.Transformer.from_proj(
+            pyproj.Proj('epsg:4326'),   # WGS84 (latitude and longitude)
+            pyproj.Proj('epsg:2039'))   # Israel Transverse Mercator
+        
     if isinstance(geometry, Point):
         lon, lat = transformer.transform(geometry.x, geometry.y)
         return Point(lon, lat)
     elif isinstance(geometry, Polygon):
         exterior_ring = []
-        for x, y in geometry.exterior.coords:
-            lon, lat = transformer.transform(x, y)
-            exterior_ring.append((lon, lat))
+        if to == '4326':
+            exterior_ring = [transformer.transform(x, y) for x, y in geometry.exterior.coords]
+        else:
+            exterior_ring = [transformer.transform(y, x) for x, y in geometry.exterior.coords]
         return Polygon(exterior_ring)
-    
+ 
 # Function to convert a string "(x, y)" to a Point object
 def str_to_point(s):
     x, y = map(float, s.strip("()").split(","))
@@ -52,3 +59,28 @@ def calculate_min_distance(building_geom, garden_geom):
     else:
         # Calculate distance from the building centroid to the garden centroid
         return building_geom.centroid.distance(garden_geom.centroid)
+
+def find_nearby_buildings(garden, buildings_gdf, G, max_distance=0.93):
+    distances = []
+    for _, building in buildings_gdf.iterrows():
+        dist = distance_walk.calculate_walk_distance(G, garden.geometry.centroid, building.geometry.centroid)
+        if dist <= max_distance and building['NUM_APTS_C'] > 0:
+            distances.append((building['OBJECTID'], dist, building['NUM_APTS_C']))
+    return sorted(distances, key=lambda x: x[1])  # Sort by distance
+
+def preprocess_data(buildings_gdf, gardens_gdf, G):
+    # Calculate garden capacities
+    gardens_gdf['capacity'] = (gardens_gdf['Shape_STAr'] / 1000 * 90).astype(int)
+    gardens_gdf['remaining_capacity'] = gardens_gdf['capacity']
+    
+    # Calculate distances between gardens and buildings
+    gardens_gdf['nearby_buildings'] = gardens_gdf.apply(lambda x: find_nearby_buildings(x, buildings_gdf, G), axis=1)
+    
+    return buildings_gdf, gardens_gdf
+
+def get_utilization(buildings_gdf, allocated_buildings, num_apartments_col):
+    total_apartments = buildings_gdf[num_apartments_col].sum()
+    allocated_apartments = allocated_buildings[num_apartments_col].sum()
+    utilization = (allocated_apartments / total_apartments) * 100
+    print(f"Apartment utilization: {allocated_apartments}/{total_apartments} ({utilization:.2f}%)")
+    return f"{utilization:.2f}%"

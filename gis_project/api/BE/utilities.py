@@ -64,6 +64,37 @@ def find_nearby_buildings(garden, buildings_gdf, G, max_distance=0.93):
     distances = []
     for _, building in buildings_gdf.iterrows():
         dist = distance_walk.calculate_walk_distance(G, garden.geometry.centroid, building.geometry.centroid)
-        if dist <= max_distance and building['NUM_APTS_C'] > 0:
-            distances.append((building['OBJECTID'], dist, building['NUM_APTS_C']))
+        if dist <= max_distance and building['units_e'] > 0:
+            distances.append((building['OBJECTID'], dist, building['units_e']))
     return sorted(distances, key=lambda x: x[1])  # Sort by distance
+
+def preprocess_data(buildings_gdf, gardens_gdf, G, apartment_type, project_status, max_distance):
+    # Filter buildings based on apartment_type
+    if apartment_type == "existing":
+        filtered_buildings = buildings_gdf[buildings_gdf['gen_status'] == 'exists']
+    else:
+        # Remove 'exists' buildings that overlap with 'renewal' buildings
+        renewal_buildings = buildings_gdf[buildings_gdf['gen_status'] == 'renewal']
+        exists_buildings = buildings_gdf[buildings_gdf['gen_status'] == 'exists']
+        to_remove = []
+        for _, exists_building in exists_buildings.iterrows():
+            for _, renewal_building in renewal_buildings.iterrows():
+                if exists_building.geometry.intersects(renewal_building.geometry):
+                    intersection_area = exists_building.geometry.intersection(renewal_building.geometry).area
+                    if intersection_area / exists_building.geometry.area > 0.8:  # More than 80% overlap
+                        to_remove.append(exists_building['OBJECTID'])
+                        break
+
+        filtered_buildings = buildings_gdf[~buildings_gdf['OBJECTID'].isin(to_remove)]
+        filtered_buildings['units_e'] = filtered_buildings['units_e'].where(filtered_buildings['units_p'].isnull(), filtered_buildings['units_p'])
+
+        # Further filter based on project_status if needed
+        if project_status:
+            filtered_buildings = filtered_buildings[filtered_buildings['tichnun_s'] == project_status]
+    # Calculate garden capacities
+    gardens_gdf['capacity'] = (gardens_gdf['Shape.STArea()'] / 1000 * 90).astype(int)
+    gardens_gdf['remaining_capacity'] = gardens_gdf['capacity']
+    
+    # Calculate distances between gardens and buildings
+    gardens_gdf['nearby_buildings'] = gardens_gdf.apply(lambda x: find_nearby_buildings(x, filtered_buildings, G,  max_distance), axis=1)
+    return filtered_buildings, gardens_gdf

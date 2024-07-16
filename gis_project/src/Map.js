@@ -6,27 +6,32 @@ import SideMenu from './SideMenu';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import L from 'leaflet';
+import ResultsDisplay from './ResultsDisplay';
 
 const styles = {
   container: {
-    position: 'relative',
+    display: 'flex',
     height: '570px',
     width: '100%',
   },
   mapContainer: {
+    flex: '1',
     height: '100%',
-    width: '100%',
     borderRadius: '15px',
     overflow: 'hidden',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
   },
+  sideContainer: {
+    width: '300px',
+    height: '100%',
+  },
 };
-
 
 function Map() {
   const featureGroupRef = useRef(null);
   const [bounds, setBounds] = useState(null);
   const [drawnItems, setDrawnItems] = useState(new L.FeatureGroup());
+  const [results, setResults] = useState(null);
 
   // Jerusalem coordinates
   const jerusalemCoords = [31.7683, 35.2137];
@@ -92,7 +97,9 @@ function Map() {
 
   return (
     <div style={styles.container}>
-      <SideMenu handleSend={handleSend} bounds={bounds} />
+      <div style={styles.sideContainer}>
+        <ResultsDisplay results={results} />
+      </div>
       <MapContainer
         center={jerusalemCoords}
         zoom={13}
@@ -122,6 +129,9 @@ function Map() {
           />
         </FeatureGroup>
       </MapContainer>
+      <div style={styles.sideContainer}>
+        <SideMenu handleSend={handleSend} bounds={bounds} />
+      </div>
     </div>
   );
 }

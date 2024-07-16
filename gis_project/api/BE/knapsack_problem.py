@@ -1,16 +1,6 @@
 import numpy as np
 from . import utilities 
 
-def preprocess_data(buildings_gdf, gardens_gdf, G):
-    # Calculate garden capacities
-    gardens_gdf['capacity'] = (gardens_gdf['Shape_STAr'] / 1000 * 90).fillna(0).astype(int)
-    gardens_gdf['remaining_capacity'] = gardens_gdf['capacity']
-    # Calculate distances between gardens and buildings
-    gardens_gdf['nearby_buildings'] = gardens_gdf.apply(lambda x: utilities.find_nearby_buildings(x, buildings_gdf, G), axis=1)
-    # Handle NA and inf values in NUM_APTS_C
-    buildings_gdf['NUM_APTS_C'] = buildings_gdf['NUM_APTS_C'].fillna(0).replace([np.inf, -np.inf], 0).astype(int)
-    return buildings_gdf, gardens_gdf
-
 # Implements the 0/1 knapsack algorithm to optimally allocate buildings to a garden
 def knapsack_garden_allocation(garden, buildings):
     capacity = int(garden['capacity'])
@@ -44,7 +34,7 @@ def knapsack_garden_allocation(garden, buildings):
     return selected
 
 def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths):
-    buildings_gdf, gardens_gdf = preprocess_data(buildings_gdf, gardens_gdf, walking_paths)
+    buildings_gdf, gardens_gdf = utilities.preprocess_data(buildings_gdf, gardens_gdf, walking_paths)
 
     allocation = {}
     

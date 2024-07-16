@@ -5,9 +5,8 @@ import Button from 'react-bootstrap/Button';
 
 const styles = {
   sideMenu: {
-    position: 'absolute',
     top: 0,
-    left: 0,
+    right: 0,
     height: '100%',
     width: '300px',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -146,10 +145,11 @@ function SideMenu({handleSend, bounds}) {
               onChange={handleChange}
             >
               <option value="">בחר סטטוס</option>
-              <option value="א">א</option>
-              <option value="ב">ב</option>
-              <option value="ג">ג</option>
-              <option value="ד">ד</option>
+              <option value="היתר בניה">היתר בניה</option>
+              <option value="נפתח תיק היתר">נפתח תיק היתר</option>
+              <option value="תכנית מאושרת">תכנית מאושרת</option>
+              <option value="הפקדה">הפקדה</option>
+              <option value="פתיחת תיק תבע">פתיחת תיק תב"ע</option>
             </select>
           </div>
         )}
