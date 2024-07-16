@@ -84,13 +84,16 @@ def preprocess_data(buildings_gdf, gardens_gdf, G, apartment_type, project_statu
                     if intersection_area / exists_building.geometry.area > 0.8:  # More than 80% overlap
                         to_remove.append(exists_building['OBJECTID'])
                         break
-
+        
         filtered_buildings = buildings_gdf[~buildings_gdf['OBJECTID'].isin(to_remove)]
-        filtered_buildings['units_e'] = filtered_buildings['units_e'].where(filtered_buildings['units_p'].isnull(), filtered_buildings['units_p'])
+        print(filtered_buildings)
+        filtered_buildings.loc[:, 'units_e'] = filtered_buildings['units_e'].where(filtered_buildings['units_p'].isnull(), filtered_buildings['units_p'])
 
         # Further filter based on project_status if needed
         if project_status:
-            filtered_buildings = filtered_buildings[filtered_buildings['tichnun_s'] == project_status]
+            filtered_buildings = filtered_buildings[
+                ~((filtered_buildings['gen_status'] == 'renewal') & (filtered_buildings['tichnun_s'] != project_status))
+            ]
     # Calculate garden capacities
     gardens_gdf['capacity'] = (gardens_gdf['Shape.STArea()'] / 1000 * 90).astype(int)
     gardens_gdf['remaining_capacity'] = gardens_gdf['capacity']
