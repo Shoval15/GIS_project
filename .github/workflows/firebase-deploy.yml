@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies for Flask app
         working-directory: ./gis_project/api
         run: |
-          source venv/bin/activate
+          source venv/Scripts/activate
           pip install -r requirements.txt
 
       - name: Deploy to Firebase Hosting
