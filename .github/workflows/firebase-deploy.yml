@@ -22,7 +22,7 @@ jobs:
         working-directory: ./gis_project
         run: |
           npm install
-          npm run build
+          CI=false npm run build
 
       - name: Set up Python
         uses: actions/setup-python@v2
