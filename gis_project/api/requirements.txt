@@ -4,6 +4,10 @@ pandas
 selenium
 shapely
 osmnx
-flask_cors
+Flask-Cors
 geopy
 scikit-learn
+geojson
+scipy
+pillow
+networkx
