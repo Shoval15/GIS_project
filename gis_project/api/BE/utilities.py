@@ -1,6 +1,8 @@
 import pyproj
 from shapely.geometry import Point, Polygon
 from . import distance_walk
+from geojson import FeatureCollection, Feature
+from shapely.geometry import mapping
 
 # Function to convert a Point or Polygon to WGS84
 def convert_coords(geometry, to='4326'):
@@ -101,3 +103,81 @@ def preprocess_data(buildings_gdf, gardens_gdf, G, apartment_type, project_statu
     # Calculate distances between gardens and buildings
     gardens_gdf['nearby_buildings'] = gardens_gdf.apply(lambda x: find_nearby_buildings(x, filtered_buildings, G,  max_distance), axis=1)
     return filtered_buildings, gardens_gdf
+
+def swap_coordinates(geom):
+    if geom['type'] == 'Point':
+        geom['coordinates'] = geom['coordinates'][::-1]
+    elif geom['type'] in ['LineString', 'MultiPoint']:
+        geom['coordinates'] = [coord[::-1] for coord in geom['coordinates']]
+    elif geom['type'] in ['Polygon', 'MultiLineString']:
+        geom['coordinates'] = [[coord[::-1] for coord in ring] for ring in geom['coordinates']]
+    elif geom['type'] == 'MultiPolygon':
+        geom['coordinates'] = [[[coord[::-1] for coord in ring] for ring in polygon] for polygon in geom['coordinates']]
+    return geom
+
+def create_allocated_layer(gdf):
+    features = []
+    for idx, row in gdf.iterrows():
+        # Convert the geometry to GeoJSON format and swap coordinates
+        geom = mapping(row['geometry'])
+        swapped_geom = swap_coordinates(geom)
+        
+        # Create a new feature with selected properties
+        new_feature = Feature(
+            geometry=swapped_geom,
+            properties={
+                'OBJECTID_building': row['OBJECTID_building'],
+                'OBJECTID_garden': row['OBJECTID_garden'],
+                'units_e': row['units_e'],
+                'address': row['address'],
+                'YEUD': row['YEUD'],
+                'Descr': row['Descr'],
+                'capacity': row['capacity'],
+                'remaining_capacity': row['remaining_capacity'],
+                'gen_status': row['gen_status']
+            }
+        )
+        features.append(new_feature)
+    
+    return FeatureCollection(features)
+
+def create_not_allocated_layer(not_allocated_buildings):
+    features = []
+    for idx, row in not_allocated_buildings.iterrows():
+        # Convert the geometry to GeoJSON format and swap coordinates
+        geom = mapping(row['geometry'])
+        swapped_geom = swap_coordinates(geom)
+
+        # Create a new feature with selected properties
+        new_feature = Feature(
+            geometry=swapped_geom,
+            properties={
+                'OBJECTID': row['OBJECTID'],
+                'units_e': row['units_e'],
+                'address': row['address'],
+                'gen_status': row['gen_status']
+            }
+        )
+        features.append(new_feature)
+    
+    return FeatureCollection(features)
+
+def create_gardens_layer(gardens_gdf):
+    features = []
+    for idx, row in gardens_gdf.iterrows():
+        geom = mapping(row['geometry'])
+        swapped_geom = swap_coordinates(geom)
+        new_feature = Feature(
+            geometry=swapped_geom,
+            properties={
+                'OBJECTID': row['OBJECTID'],
+                'YEUD': row['YEUD'],
+                'Descr': row['Descr'],
+                'capacity': row['capacity'],
+                'remaining_capacity': row['remaining_capacity'],
+                'Shape.STArea()': row['Shape.STArea()']
+            }
+        )
+        features.append(new_feature)
+    
+    return FeatureCollection(features)

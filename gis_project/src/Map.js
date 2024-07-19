@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MapContainer, TileLayer, FeatureGroup } from 'react-leaflet';
+import { MapContainer, TileLayer, FeatureGroup, GeoJSON } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { EditControl } from 'react-leaflet-draw';
 import SideMenu from './SideMenu';
@@ -32,6 +32,9 @@ function Map() {
   const [bounds, setBounds] = useState(null);
   const [drawnItems, setDrawnItems] = useState(new L.FeatureGroup());
   const [results, setResults] = useState(null);
+  const [allocatedLayer, setAllocatedLayer] = useState(null);
+  const [notAllocatedLayer, setNotAllocatedLayer] = useState(null);
+  const [gardensLayer, setGardensLayer] = useState(null);
 
   // Jerusalem coordinates
   const jerusalemCoords = [31.7683, 35.2137];
@@ -89,12 +92,28 @@ function Map() {
     .then(response => response.json())
     .then(data => {
       console.log("Response from API:", data);
+      setAllocatedLayer(data.response.allocated_layer);
+      setNotAllocatedLayer(data.response.not_allocated_layer);
+      setResults(data.response.allocation_stats);
+      setGardensLayer(data.response.gardens_layer);
     })
     .catch(error => {
       console.error("Error sending bounds to API:", error);
     });
   }
 
+  const onEachFeature = (feature, layer) => {
+    if (feature.properties) {
+      layer.bindPopup(`
+        <strong>Building ID:</strong> ${feature.properties.OBJECTID_building}<br>
+        <strong>Garden ID:</strong> ${feature.properties.OBJECTID_garden}<br>
+        <strong>Address:</strong> ${feature.properties.address}<br>
+        <strong>Units:</strong> ${feature.properties.units_e}<br>
+      `);
+    }
+  };
+
+  
   return (
     <div style={styles.container}>
       <div style={styles.sideContainer}>
@@ -128,6 +147,70 @@ function Map() {
             }}
           />
         </FeatureGroup>
+        {allocatedLayer && (
+          <GeoJSON 
+            data={allocatedLayer} 
+            onEachFeature={(feature, layer) => {
+              layer.bindPopup(`
+              <strong>Building ID:</strong> ${feature.properties.OBJECTID_building}<br>
+              <strong>Garden ID:</strong> ${feature.properties.OBJECTID_garden}<br>
+              <strong>Address:</strong> ${feature.properties.address}<br>
+              <strong>Units:</strong> ${feature.properties.units_e}<br>
+              <strong>Exists or Proposed:</strong> ${feature.properties.gen_status}<br>
+            `);
+            }}
+            style={(feature) => ({
+              fillColor:  'blue',
+              weight: 2,
+              opacity: 1,
+              color: 'white',
+              dashArray: '3',
+              fillOpacity: 0.7
+            })}
+          />
+        )}
+      {/* {notAllocatedLayer && (
+          <GeoJSON 
+            data={notAllocatedLayer} 
+            onEachFeature={(feature, layer) => {
+              layer.bindPopup(`
+                <b>Building:</b> ${feature.properties.address}<br>
+                <b>Units:</b> ${feature.properties.units_e}<br>
+                <b>Status:</b> Not Allocated
+              `);
+            }}
+            style={(feature) => ({
+              fillColor:  'red',
+              weight: 2,
+              opacity: 1,
+              color: 'white',
+              dashArray: '3',
+              fillOpacity: 0.6
+            })}
+          />
+        )}
+
+        {gardensLayer && (
+          <GeoJSON 
+            data={gardensLayer} 
+            onEachFeature={(feature, layer) => {
+              layer.bindPopup(`
+                <b>Garden:</b> ${feature.properties.Descr}<br>
+                <b>Capacity:</b> ${feature.properties.capacity}<br>
+                <b>Remaining Capacity:</b> ${feature.properties.remaining_capacity}<br>
+                <b>Area:</b> ${feature.properties['Shape.STArea()']} sq m
+              `);
+            }}
+            style={(feature) => ({
+              fillColor:  'brown',
+              weight: 2,
+              opacity: 1,
+              color: 'white',
+              dashArray: '3',
+              fillOpacity: 0.5
+            })}
+          /> 
+        )}*/}
       </MapContainer>
       <div style={styles.sideContainer}>
         <SideMenu handleSend={handleSend} bounds={bounds} />

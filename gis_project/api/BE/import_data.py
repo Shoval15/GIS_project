@@ -146,7 +146,13 @@ def import_walking_paths(selected_polygon):
     mode = 'walk'
     # Create the graph of the area from OSM data. It will download the data and create the graph
     G = ox.graph_from_bbox(bbox=(miny, maxy, minx, maxx), network_type=mode)
-    # OSM data are sometime incomplete so we use the speed module of osmnx to add missing edge speeds and travel times
-    G = ox.add_edge_speeds(G)
-    G = ox.add_edge_travel_times(G)
+    # Check if the graph is empty
+    if len(G.nodes) == 0 or len(G.edges) == 0:
+        return None
+    try:
+        # OSM data are sometime incomplete so we use the speed module of osmnx to add missing edge speeds and travel times
+        G = ox.add_edge_speeds(G)
+        G = ox.add_edge_travel_times(G)
+    except Exception:
+        return None
     return G

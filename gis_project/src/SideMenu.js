@@ -131,7 +131,7 @@ function SideMenu({handleSend, bounds}) {
               checked={formData.apartmentType === 'proposed'}
               onChange={handleChange}
             />
-            <label htmlFor="proposed">מוצעות</label>
+            <label htmlFor="proposed">קיימות ומוצעות</label>
           </div>
         </div>
         {formData.apartmentType === 'proposed' && (

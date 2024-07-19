@@ -58,4 +58,4 @@ def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths, distanc
         "not_allocated_apartments": not_allocated_apartments,
         "allocation_percentage": (allocated_apartments / total_apartments) * 100 if total_apartments > 0 else 0
     }
-    return merged_data, not_allocated_buildings, geojson_data, allocation_stats
+    return merged_data, not_allocated_buildings, geojson_data, allocation_stats, gardens_gdf
