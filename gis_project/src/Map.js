@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import L from 'leaflet';
 import ResultsDisplay from './ResultsDisplay';
+import {deploy_be, debugging_be} from './App';
 
 const styles = {
   container: {
@@ -77,7 +78,7 @@ function Map() {
   const handleSend = (formData) => {
     console.log(formData);
     // Send bounds to Flask API using fetch
-    fetch('http://127.0.0.1:5000/api/bounds', {
+    fetch(deploy_be + '/api/bounds', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

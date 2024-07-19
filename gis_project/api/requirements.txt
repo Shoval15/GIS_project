@@ -11,3 +11,4 @@ geojson
 scipy
 pillow
 networkx
+firebase_functions
