@@ -7,6 +7,8 @@ from shapely.geometry import Polygon
 from BE import utilities
 import geopandas as gpd
 import json
+from firebase_functions import https_fn
+
 
 app = Flask(__name__)
 CORS(app) 
@@ -71,7 +73,15 @@ def get_bounds():
     merged_allocation.crs = "EPSG:4326"
     allocated_layer = utilities.create_allocated_layer(merged_allocation)
     not_allocated_layer = allocated_layer
-    allocation_stats = None
+    # Calculate allocation statistics
+    allocated_apartments = len(merged_allocation)
+    not_allocated_apartments = 900 - allocated_apartments
+    allocation_stats = {
+        "total_apartments": 900,
+        "allocated_apartments": allocated_apartments,
+        "not_allocated_apartments": not_allocated_apartments,
+        "allocation_percentage": (allocated_apartments / 900) * 100 if 900 > 0 else 0
+    }
     gardens_layer = allocated_layer
     # End debugging
 
@@ -84,5 +94,10 @@ def get_bounds():
                         'gardens_layer': gardens_layer
                     }})
 
+# @https_fn.on_request()
+# def serve_flask_app(request):
+#     with app.test_request_context():
+#         return app.full_dispatch_request()
+    
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)

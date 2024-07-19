@@ -1,5 +1,6 @@
 import React from 'react';
 import { projectName } from './names';
+import LanguageSwitch from './LanguageSwitch';
 
 const styles = {
   container: {
@@ -49,10 +50,16 @@ const styles = {
     fontSize: '1.2rem',
     marginTop: '10px',
     textShadow: '1px 1px 2px rgba(0,0,0,0.7)',
+  },
+  languageSwitchContainer: {
+    position: 'absolute',
+    top: '10px',
+    left: '10px',
+    zIndex: 10,
   }
 };
 
-function Logo() {
+function Logo({language, toggleLanguage}) {
   return (
     <div style={styles.container}>
       <img
@@ -61,6 +68,11 @@ function Logo() {
         alt="Logo"
       />
       <div style={styles.overlay} />
+
+      <div style={styles.languageSwitchContainer}>
+        <LanguageSwitch language={language} toggleLanguage={toggleLanguage} />
+      </div>
+
       <div style={styles.titleContainer}>
         <h1 style={styles.title}>
           {projectName}

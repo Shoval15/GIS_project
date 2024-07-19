@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import Button from 'react-bootstrap/Button';
-
+import { strings } from './strings';
 
 const styles = {
   sideMenu: {
@@ -81,7 +81,7 @@ const styles = {
 };
 
 
-function SideMenu({handleSend, bounds}) {
+function SideMenu({handleSend, bounds, language}) {
   const [formData, setFormData] = useState({
     projectStatus: '',
     apartmentType: 'existing',
@@ -101,16 +101,16 @@ function SideMenu({handleSend, bounds}) {
     if (bounds) {
       handleSend(formData);
     } else {
-      alert('יש לצייר תחום מבוקש על המפה');
+      alert(strings.drawBoundsAlert[language]);
     }
   };
 
   return (
-    <div style={styles.sideMenu}>
+    <div style={{...styles.sideMenu, direction: language === 'he' ? 'rtl' : 'ltr'}}>
       <img src="img2.jpeg" alt="Logo" style={styles.logo} />
       <form style={styles.form} onSubmit={handleSubmit}>
         <div style={styles.formGroup}>
-          <label style={styles.label}>סוג דירות:</label>
+          <label style={styles.label}>{strings.apartmentType[language]}:</label>
           <div style={styles.radio}>
             <input 
               type="radio" 
@@ -120,7 +120,7 @@ function SideMenu({handleSend, bounds}) {
               checked={formData.apartmentType === 'existing'}
               onChange={handleChange}
             />
-            <label htmlFor="existing">קיימות</label>
+            <label htmlFor="existing">{strings.existing[language]}</label>
           </div>
           <div style={styles.radio}>
             <input 
@@ -131,12 +131,12 @@ function SideMenu({handleSend, bounds}) {
               checked={formData.apartmentType === 'proposed'}
               onChange={handleChange}
             />
-            <label htmlFor="proposed">קיימות ומוצעות</label>
+            <label htmlFor="proposed">{strings.existingAndProposed[language]}</label>
           </div>
         </div>
         {formData.apartmentType === 'proposed' && (
           <div style={styles.formGroup} >
-            <label htmlFor="projectStatus" style={styles.label}>סטטוס פרויקט:</label>
+            <label htmlFor="projectStatus" style={styles.label}>{strings.projectStatus[language]}:</label>
             <select 
               id="projectStatus" 
               name="projectStatus"
@@ -144,18 +144,18 @@ function SideMenu({handleSend, bounds}) {
               value={formData.projectStatus}
               onChange={handleChange}
             >
-              <option value="">בחר סטטוס</option>
-              <option value="היתר בניה">היתר בניה</option>
-              <option value="נפתח תיק היתר">נפתח תיק היתר</option>
-              <option value="תכנית מאושרת">תכנית מאושרת</option>
-              <option value="הפקדה">הפקדה</option>
-              <option value="פתיחת תיק תבע">פתיחת תיק תב"ע</option>
+              <option value="">{strings.chooseStatus[language]}</option>
+              <option value="היתר בניה">{strings.buildingPermit[language]}</option>
+              <option value="נפתח תיק היתר">{strings.permitFileOpened[language]}</option>
+              <option value="תכנית מאושרת">{strings.approvedPlan[language]}</option>
+              <option value="הפקדה">{strings.deposit[language]}</option>
+              <option value="פתיחת תיק תבע">{strings.urbanPlanFileOpened[language]}</option>
             </select>
           </div>
         )}
         
         <div style={styles.formGroup} >
-          <label htmlFor="distance" style={styles.label}>מרחק מקסימלי בין בניין לשצ"פ:</label>
+          <label htmlFor="distance" style={styles.label}>{strings.maxDistanceBuildingToGarden[language]}:</label>
           <div style={styles.inputGroup} className='col-md-6'>
             <input 
               type="number" 
@@ -167,15 +167,14 @@ function SideMenu({handleSend, bounds}) {
               step="0.01"
               min="0"
             />
-            <span style={styles.inputLabel}>ק"מ</span>
+            <span style={styles.inputLabel}>{strings.km[language]}</span>
           </div>
         </div>
         {!bounds && (
-          <label style={styles.blinkingLabel}>יש לצייר תחום מבוקש על המפה</label>
+          <label style={styles.blinkingLabel}>{strings.drawBoundsPrompt[language]}</label>
         )}
         {bounds && (
-        <Button variant="outline-success" type="submit" >שלח</Button>
-
+          <Button variant="outline-success" type="submit">{strings.send[language]}</Button>
         )}
       </form>
     </div>

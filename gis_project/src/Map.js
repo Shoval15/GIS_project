@@ -8,6 +8,8 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import L from 'leaflet';
 import ResultsDisplay from './ResultsDisplay';
 import {deploy_be, debugging_be} from './App';
+import Legend from './Legend';
+import { strings } from './strings';
 
 const styles = {
   container: {
@@ -28,7 +30,7 @@ const styles = {
   },
 };
 
-function Map() {
+function Map({language }) {
   const featureGroupRef = useRef(null);
   const [bounds, setBounds] = useState(null);
   const [drawnItems, setDrawnItems] = useState(new L.FeatureGroup());
@@ -78,7 +80,7 @@ function Map() {
   const handleSend = (formData) => {
     console.log(formData);
     // Send bounds to Flask API using fetch
-    fetch(deploy_be + '/api/bounds', {
+    fetch(debugging_be + '/api/bounds', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -103,22 +105,40 @@ function Map() {
     });
   }
 
-  const onEachFeature = (feature, layer) => {
-    if (feature.properties) {
-      layer.bindPopup(`
-        <strong>Building ID:</strong> ${feature.properties.OBJECTID_building}<br>
-        <strong>Garden ID:</strong> ${feature.properties.OBJECTID_garden}<br>
-        <strong>Address:</strong> ${feature.properties.address}<br>
-        <strong>Units:</strong> ${feature.properties.units_e}<br>
-      `);
-    }
+  const onEachFeatureAllocated = (feature, layer) => {
+    layer.bindPopup(`
+      <strong>${strings.buildingID[language]}:</strong> ${feature.properties.OBJECTID_building}<br>
+      <strong>${strings.gardenID[language]}:</strong> ${feature.properties.OBJECTID_garden}<br>
+      <strong>${strings.address[language]}:</strong> ${feature.properties.address}<br>
+      <strong>${strings.units[language]}:</strong> ${feature.properties.units_e}<br>
+      <strong>${strings.existsOrProposed[language]}:</strong> ${feature.properties.gen_status}<br>
+    `);
   };
 
+  const onEachFeatureNotAllocated = (feature, layer) => {
+    layer.bindPopup(`
+      <b>${strings.address[language]}:</b> ${feature.properties.address}<br>
+      <b>${strings.units[language]}:</b> ${feature.properties.units_e}<br>
+      <b>${strings.status[language]}:</b> ${strings.notAllocated[language]}
+    `);
+  };
+
+  const onEachFeatureGardens = (feature, layer) => {
+    layer.bindPopup(`
+      <b>${strings.areaType[language]}:</b> ${feature.properties.Descr}<br>
+      <b>${strings.capacity[language]}:</b> ${feature.properties.capacity}<br>
+      <b>${strings.remainingCapacity[language]}:</b> ${feature.properties.remaining_capacity}<br>
+      <b>${strings.area[language]}:</b> ${feature.properties['Shape.STArea()']} sq m
+    `);
+  };
   
   return (
     <div style={styles.container}>
       <div style={styles.sideContainer}>
-        <ResultsDisplay results={results} />
+        {results && (
+        <ResultsDisplay results={results} language={language} />
+
+        )}
       </div>
       <MapContainer
         center={jerusalemCoords}
@@ -151,15 +171,7 @@ function Map() {
         {allocatedLayer && (
           <GeoJSON 
             data={allocatedLayer} 
-            onEachFeature={(feature, layer) => {
-              layer.bindPopup(`
-              <strong>Building ID:</strong> ${feature.properties.OBJECTID_building}<br>
-              <strong>Garden ID:</strong> ${feature.properties.OBJECTID_garden}<br>
-              <strong>Address:</strong> ${feature.properties.address}<br>
-              <strong>Units:</strong> ${feature.properties.units_e}<br>
-              <strong>Exists or Proposed:</strong> ${feature.properties.gen_status}<br>
-            `);
-            }}
+            onEachFeature={onEachFeatureAllocated}
             style={(feature) => ({
               fillColor:  'blue',
               weight: 2,
@@ -170,16 +182,10 @@ function Map() {
             })}
           />
         )}
-      {/* {notAllocatedLayer && (
+      {notAllocatedLayer && (
           <GeoJSON 
             data={notAllocatedLayer} 
-            onEachFeature={(feature, layer) => {
-              layer.bindPopup(`
-                <b>Building:</b> ${feature.properties.address}<br>
-                <b>Units:</b> ${feature.properties.units_e}<br>
-                <b>Status:</b> Not Allocated
-              `);
-            }}
+            onEachFeature={onEachFeatureNotAllocated}
             style={(feature) => ({
               fillColor:  'red',
               weight: 2,
@@ -194,16 +200,9 @@ function Map() {
         {gardensLayer && (
           <GeoJSON 
             data={gardensLayer} 
-            onEachFeature={(feature, layer) => {
-              layer.bindPopup(`
-                <b>Garden:</b> ${feature.properties.Descr}<br>
-                <b>Capacity:</b> ${feature.properties.capacity}<br>
-                <b>Remaining Capacity:</b> ${feature.properties.remaining_capacity}<br>
-                <b>Area:</b> ${feature.properties['Shape.STArea()']} sq m
-              `);
-            }}
+            onEachFeature={onEachFeatureGardens}
             style={(feature) => ({
-              fillColor:  'brown',
+              fillColor:  'green',
               weight: 2,
               opacity: 1,
               color: 'white',
@@ -211,10 +210,11 @@ function Map() {
               fillOpacity: 0.5
             })}
           /> 
-        )}*/}
+        )}
+         <Legend language={language}/>
       </MapContainer>
       <div style={styles.sideContainer}>
-        <SideMenu handleSend={handleSend} bounds={bounds} />
+        <SideMenu handleSend={handleSend} bounds={bounds} language={language} />
       </div>
     </div>
   );
