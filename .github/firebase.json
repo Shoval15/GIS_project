@@ -1,0 +1,11 @@
+{
+    "hosting": {
+      "public": "gis_project/build",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ]
+    }
+  }
+  
