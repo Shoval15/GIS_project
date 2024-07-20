@@ -146,5 +146,22 @@ export const strings = {
       garden: {
         he: 'שצ"פ',
         en: 'Garden'
+      },
+      smallPolygon: {
+        he: 'יש לבחור שטח העולה על 10 דונם ',
+        en: 'Please select an area larger than 10 dunams (10,000 square meters)'
+      },
+      importLayer: {
+        he: 'זמנית לא ניתן להתחבר לשירותי Jerusalem GIS. ניתן לנסות שוב בשלב מאוחר יותר',
+        en: 'Unable to connect to Jerusalem GIS services at the moment. Please try again later'
+      },
+      close: {
+        he: 'סגור',
+        en: 'close'
+      },
+      error: {
+        he: 'שגיאה',
+        en: 'error'
       }
+
 };

@@ -28,14 +28,17 @@ def get_bounds():
     # Create a Polygon from the bounds
     polygon = Polygon([(sw['lng'], sw['lat']), (ne['lng'], sw['lat']),
                        (ne['lng'], ne['lat']), (sw['lng'], ne['lat'])])
+
+    if  not utilities.check_polygon_size(polygon):
+        return jsonify({"status": "failed", "received": data, "response": "smallPolygon"})
     """
     buildings_gdf = import_data.import_buildings(polygon)
     if buildings_gdf.empty:
-        return jsonify({"status": "failed", "received": data, "response": "Failed import building layer"})
+        return jsonify({"status": "failed", "received": data, "response": "importLayer"})
     renewal_gdf = import_data.import_urban_renewal(polygon)
     if renewal_gdf.empty :
         if apartment_type == 'proposed':
-            return jsonify({"status": "failed", "received": data, "response": "Failed import urban renewal layer"})
+            return jsonify({"status": "failed", "received": data, "response": "importLayer"})
         else:
             building_old_and_new_gdf = buildings_gdf
             building_old_and_new_gdf['gen_status'] = 'exists'
@@ -43,10 +46,10 @@ def get_bounds():
         building_old_and_new_gdf = import_data.union_building_and_renewal(buildings_gdf, renewal_gdf)
     gardens_gdf = import_data.import_gardens(polygon)
     if gardens_gdf.empty :
-        return jsonify({"status": "failed", "received": data, "response": "Failed import gardens layer"})
+        return jsonify({"status": "failed", "received": data, "response": "importLayer"})
     walking_paths = import_data.import_walking_paths(polygon)
     if walking_paths is None:
-        return jsonify({"status": "failed", "received": data, "response": "Failed import routs graph"})
+        return jsonify({"status": "failed", "received": data, "response": "importLayer"})
 
     allocated_gdf, not_allocated_gdf, merged_allocation, allocation_stats, gardens_gdf = greedy_algorithm_topo.garden_centric_allocation(building_old_and_new_gdf, gardens_gdf, walking_paths, distance, apartment_type, project_status)
     allocated_layer = utilities.create_allocated_layer(merged_allocation)

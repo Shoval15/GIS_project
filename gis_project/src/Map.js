@@ -11,6 +11,7 @@ import {deploy_be, debugging_be} from './App';
 import Legend from './Legend';
 import { strings } from './strings';
 import './styles/Map.css';
+import ErrorModal from './ErrorModal';
 
 function Map({language }) {
   const featureGroupRef = useRef(null);
@@ -21,6 +22,8 @@ function Map({language }) {
   const [notAllocatedLayer, setNotAllocatedLayer] = useState(null);
   const [gardensLayer, setGardensLayer] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+
 
   // Jerusalem coordinates
   const jerusalemCoords = [31.7683, 35.2137];
@@ -79,17 +82,20 @@ function Map({language }) {
     .then(response => response.json())
     .then(data => {
       console.log("Response from API:", data);
-      setAllocatedLayer(data.response.allocated_layer);
-      setNotAllocatedLayer(data.response.not_allocated_layer);
-      setResults(data.response.allocation_stats);
-      setGardensLayer(data.response.gardens_layer);
+      if (data.status === 'failed') {
+        setErrorMessage(data.response);
+      } else {
+        setAllocatedLayer(data.response.allocated_layer);
+        setNotAllocatedLayer(data.response.not_allocated_layer);
+        setResults(data.response.allocation_stats);
+        setGardensLayer(data.response.gardens_layer);
+      }
       setLoading(false);
-
     })
     .catch(error => {
       console.error("Error sending bounds to API:", error);
+      setErrorMessage("An error occurred while processing your request.");
       setLoading(false);
-
     });
   }
 
@@ -121,6 +127,10 @@ function Map({language }) {
   };
 
   const mapLanguage = language === 'en' ? 'en' : 'he';
+  const handleCloseErrorModal = () => {
+    setErrorMessage(null);
+    window.location.reload();
+  };
 
   
   return (
@@ -211,6 +221,15 @@ function Map({language }) {
       <div className="map-side-container">
         <SideMenu handleSend={handleSend} bounds={bounds} language={language}  loading={loading}/>
       </div>
+      {errorMessage && (
+        <ErrorModal 
+      show={errorMessage !== null}
+      onHide={handleCloseErrorModal}
+      message={errorMessage}
+      language={language}
+    />
+      )}
+      
     </div>
   );
 }

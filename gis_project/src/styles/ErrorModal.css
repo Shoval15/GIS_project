@@ -1,0 +1,25 @@
+.modal-content {
+    text-align: left;
+  }
+  
+  .rtl .modal-content {
+    text-align: right;
+  }
+  
+  .rtl .modal-header .close {
+    margin: -1rem auto -1rem -1rem;
+  }
+  
+  .rtl .modal-footer {
+    justify-content: flex-start;
+  }
+  
+  .rtl .modal-footer > :not(:first-child) {
+    margin-left: 0;
+    margin-right: .25rem;
+  }
+  
+  .rtl .modal-footer > :not(:last-child) {
+    margin-right: 0;
+    margin-left: .25rem;
+  }
