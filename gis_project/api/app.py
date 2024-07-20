@@ -8,7 +8,7 @@ from BE import utilities
 import geopandas as gpd
 import json
 from firebase_functions import https_fn
-
+import time
 
 app = Flask(__name__)
 CORS(app) 
@@ -84,7 +84,7 @@ def get_bounds():
     }
     gardens_layer = allocated_layer
     # End debugging
-
+    time.sleep(5)
     return jsonify({"status": "success",
                     "received": data,
                     "response": {

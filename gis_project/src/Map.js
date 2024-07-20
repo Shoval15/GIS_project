@@ -10,25 +10,7 @@ import ResultsDisplay from './ResultsDisplay';
 import {deploy_be, debugging_be} from './App';
 import Legend from './Legend';
 import { strings } from './strings';
-
-const styles = {
-  container: {
-    display: 'flex',
-    height: '570px',
-    width: '100%',
-  },
-  mapContainer: {
-    flex: '1',
-    height: '100%',
-    borderRadius: '15px',
-    overflow: 'hidden',
-    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-  },
-  sideContainer: {
-    width: '300px',
-    height: '100%',
-  },
-};
+import './styles/Map.css';
 
 function Map({language }) {
   const featureGroupRef = useRef(null);
@@ -38,6 +20,7 @@ function Map({language }) {
   const [allocatedLayer, setAllocatedLayer] = useState(null);
   const [notAllocatedLayer, setNotAllocatedLayer] = useState(null);
   const [gardensLayer, setGardensLayer] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   // Jerusalem coordinates
   const jerusalemCoords = [31.7683, 35.2137];
@@ -78,6 +61,7 @@ function Map({language }) {
   }
 
   const handleSend = (formData) => {
+    setLoading(true);
     console.log(formData);
     // Send bounds to Flask API using fetch
     fetch(debugging_be + '/api/bounds', {
@@ -99,9 +83,13 @@ function Map({language }) {
       setNotAllocatedLayer(data.response.not_allocated_layer);
       setResults(data.response.allocation_stats);
       setGardensLayer(data.response.gardens_layer);
+      setLoading(false);
+
     })
     .catch(error => {
       console.error("Error sending bounds to API:", error);
+      setLoading(false);
+
     });
   }
 
@@ -131,22 +119,29 @@ function Map({language }) {
       <b>${strings.area[language]}:</b> ${feature.properties['Shape.STArea()']} sq m
     `);
   };
+
+  const mapLanguage = language === 'en' ? 'en' : 'he';
+
   
   return (
-    <div style={styles.container}>
-      <div style={styles.sideContainer}>
+    <div className="map-container">
+      <div className="map-side-container">
         {results && (
-        <ResultsDisplay results={results} language={language} />
+        <ResultsDisplay results={results} language={language} loading={loading}/>
+
+        )}
+        {loading && (
+        <img src="loading.gif" alt="loading"></img>
 
         )}
       </div>
       <MapContainer
         center={jerusalemCoords}
         zoom={13}
-        style={styles.mapContainer}
+        className="map-leaflet-container"
       >
         <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          url={`https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?lang=${mapLanguage}`}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <FeatureGroup ref={featureGroupRef}>
@@ -213,8 +208,8 @@ function Map({language }) {
         )}
          <Legend language={language}/>
       </MapContainer>
-      <div style={styles.sideContainer}>
-        <SideMenu handleSend={handleSend} bounds={bounds} language={language} />
+      <div className="map-side-container">
+        <SideMenu handleSend={handleSend} bounds={bounds} language={language}  loading={loading}/>
       </div>
     </div>
   );

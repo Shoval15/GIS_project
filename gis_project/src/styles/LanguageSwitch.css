@@ -1,0 +1,22 @@
+.language-switch {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
+  }
+  
+  .flag-icon {
+    font-size: 2rem; /* Adjust size as needed */
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .flag-icon:hover,
+  .flag-icon:focus {
+    transform: scale(1.2);
+    outline: none;
+  }
+  .img-flag{
+    width:'30px';
+  }
+  

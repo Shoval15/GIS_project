@@ -1,19 +1,18 @@
 import React from 'react';
-import './App.css'; 
+import './styles/LanguageSwitch.css'; 
 
 const LanguageSwitch = ({ language, toggleLanguage }) => {
   return (
     <div className="language-switch">
-      <label className="switch">
-        <input
-          type="checkbox"
-          checked={language === 'en'}
-          onChange={toggleLanguage}
-        />
-        <span className="slider round"></span>
-      </label>
-      <span className="language-label" style={{color:'white'}}>
-        {language === 'en' ? 'EN' : 'עב'}
+      <span 
+        onClick={toggleLanguage}
+        className="flag-icon"
+        role="button"
+        aria-label={`Switch to ${language === 'he' ? 'Hebrew' : 'English'}`}
+        tabIndex="0"
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleLanguage(); }}
+      >
+        {language === 'he' ? <img src="usa-flag.png" alt="USA Flag" className='img-flag' style={{width:'30px'}}/> : <img src="israel-flag.png" alt="Israel Flag" className='img-flag' style={{width:'30px'}}/> }
       </span>
     </div>
   );

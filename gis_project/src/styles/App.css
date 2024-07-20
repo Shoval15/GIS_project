@@ -1,0 +1,22 @@
+.App {
+  text-align: center;
+}
+
+.App.rtl {
+  direction: rtl;
+}
+
+.App.ltr {
+  direction: ltr;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
