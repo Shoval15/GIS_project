@@ -189,18 +189,13 @@ def check_polygon_size(polygon, min_area=10000):
     # Define the source CRS (WGS84) and target CRS (ITM - Israel Transverse Mercator)
     src_crs = CRS("EPSG:4326")
     dst_crs = CRS("EPSG:2039")
-
-    # Create a transformer
     transformer = Transformer.from_crs(src_crs, dst_crs, always_xy=True)
     # Transform the polygon coordinates to ITM
     polygon_itm_coords = [transformer.transform(x, y) for x, y in polygon.exterior.coords]
-
-    # Create a new polygon with the transformed coordinates
     polygon_itm = wkt.loads(f"POLYGON (({', '.join([f'{x} {y}' for x, y in polygon_itm_coords])}))")
     # Calculate the area in square meters
     area = polygon_itm.area
     print(area)
     if area < min_area:
         return False
-    
     return True  # If the polygon is large enough

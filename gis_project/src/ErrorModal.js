@@ -5,8 +5,6 @@ import { strings } from './strings';
 import './styles/ErrorModal.css';
 
 function ErrorModal({ show, onHide, message, language }) {
-  console.log(message);
-  
   const rtlClass = language === 'he' ? 'rtl' : '';
 
   return (

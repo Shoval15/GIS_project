@@ -31,6 +31,7 @@ def get_bounds():
 
     if  not utilities.check_polygon_size(polygon):
         return jsonify({"status": "failed", "received": data, "response": "smallPolygon"})
+    
     """
     buildings_gdf = import_data.import_buildings(polygon)
     if buildings_gdf.empty:
