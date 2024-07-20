@@ -12,7 +12,7 @@ function ErrorModal({ show, onHide, message, language }) {
       <Modal.Header closeButton>
         <Modal.Title>{strings['error'][language]}</Modal.Title>
       </Modal.Header>
-      <Modal.Body>{strings[message][language]}</Modal.Body>
+      <Modal.Body>{message}</Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onHide}>
           {strings['close'][language]}

@@ -2,8 +2,13 @@ import React from 'react';
 import { projectName } from './names';
 import LanguageSwitch from './LanguageSwitch';
 import './styles/Logo.css';
+import { strings } from './strings';
 
 function Logo({language, toggleLanguage}) {
+  // Split the project name into parts
+  const parts = projectName.split('Green');
+  console.log(parts)
+
   return (
     <div className="logo-container">
       <img
@@ -19,9 +24,11 @@ function Logo({language, toggleLanguage}) {
 
       <div className="logo-title-container">
         <h1 className="logo-title">
-          {projectName}
+          {parts[0]}
+          <span style={{color: '#548762'}}>GREEN</span>
+          {parts[1]}
         </h1>
-        <h3 className="logo-explanation">הסבר</h3>
+        <h3 className="logo-explanation">{strings['explanation'][language]}</h3>
       </div>
     </div>
   );

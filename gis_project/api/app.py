@@ -70,30 +70,44 @@ def get_bounds():
     # For debugging:
     with open('allocated_buildings_with_gardens.json', 'r', encoding='utf-8') as file:
         data = json.load(file)
-    print(data['features'][:10])
     merged_allocation = gpd.GeoDataFrame.from_features(data)
-    print(merged_allocation)
     # Assuming the CRS is WGS84 (EPSG:4326)
     merged_allocation.crs = "EPSG:4326"
     allocated_layer = utilities.create_allocated_layer(merged_allocation)
     not_allocated_layer = allocated_layer
     # Calculate allocation statistics
     allocated_apartments = len(merged_allocation)
-    not_allocated_apartments = 900 - allocated_apartments
+    not_allocated_apartments = 830 - allocated_apartments
     allocation_stats = {
-        "total_apartments": 900,
+        "total_apartments": 830,
         "allocated_apartments": allocated_apartments,
         "not_allocated_apartments": not_allocated_apartments,
-        "allocation_percentage": (allocated_apartments / 900) * 100 if 900 > 0 else 0
+        "allocation_percentage": (allocated_apartments / 830) * 100 if 830 > 0 else 0
     }
-    gardens_layer = allocated_layer
+    with open('gardens_sorted.json', 'r', encoding='utf-8') as file:
+        gardens_layer = json.load(file)
+
+    def swap_coordinates(geojson):
+        if isinstance(geojson, dict):
+            if geojson.get('type') == 'FeatureCollection':
+                for feature in geojson.get('features', []):
+                    swap_coordinates(feature)
+            elif geojson.get('type') == 'Feature':
+                swap_coordinates(geojson.get('geometry', {}))
+            elif geojson.get('type') == 'Polygon':
+                geojson['coordinates'] = [
+                    [coord[::-1] for coord in ring]
+                    for ring in geojson.get('coordinates', [])
+                ]
+        return geojson
+    gardens_layer = swap_coordinates(gardens_layer)
     # End debugging
     time.sleep(5)
     return jsonify({"status": "success",
                     "received": data,
                     "response": {
                         'allocated_layer': allocated_layer,
-                        'not_allocated_layer':not_allocated_layer,
+                        'not_allocated_layer':None,
                         'allocation_stats': allocation_stats,
                         'gardens_layer': gardens_layer
                     }})

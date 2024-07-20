@@ -3,6 +3,9 @@ import { projectName } from './names';
 import './styles/Footer.css';
 
 function Footer() {
+  // Split the project name into parts
+  const parts = projectName.split('Green');
+
   return (
     <div className="footer-container">
       <img
@@ -12,7 +15,9 @@ function Footer() {
       />
       <div className="footer-overlay" />
       <h1 className="footer-title">
-        Shoval Aharon - {projectName}
+        Shoval Aharon - {parts[0]}
+        <span style={{color: '#548762'}}>GREEN</span>
+        {parts[1]}
       </h1>
     </div>
   );

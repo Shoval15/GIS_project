@@ -162,6 +162,10 @@ export const strings = {
       error: {
         he: 'שגיאה',
         en: 'error'
+      },
+      explanation: {
+        he: 'תכנון חכם לעיר ירוקה יותר',
+        en: 'Smart Planning for a Greener City'
       }
 
 };

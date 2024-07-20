@@ -1,1 +1,1 @@
-export const projectName = "Final Project";
+export const projectName = "UrbanGreenSpace Analyzer";

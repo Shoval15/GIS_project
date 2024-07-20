@@ -83,7 +83,7 @@ function Map({language }) {
     .then(data => {
       console.log("Response from API:", data);
       if (data.status === 'failed') {
-        setErrorMessage(data.response);
+        setErrorMessage(strings[data.response][language]);
       } else {
         setAllocatedLayer(data.response.allocated_layer);
         setNotAllocatedLayer(data.response.not_allocated_layer);
@@ -94,7 +94,7 @@ function Map({language }) {
     })
     .catch(error => {
       console.error("Error sending bounds to API:", error);
-      setErrorMessage("An error occurred while processing your request.");
+      setErrorMessage(error);
       setLoading(false);
     });
   }
@@ -181,7 +181,6 @@ function Map({language }) {
               fillColor:  'blue',
               weight: 2,
               opacity: 1,
-              color: 'white',
               dashArray: '3',
               fillOpacity: 0.7
             })}
@@ -195,13 +194,12 @@ function Map({language }) {
               fillColor:  'red',
               weight: 2,
               opacity: 1,
-              color: 'white',
               dashArray: '3',
               fillOpacity: 0.6
             })}
           />
         )}
-
+        {console.log(gardensLayer)}
         {gardensLayer && (
           <GeoJSON 
             data={gardensLayer} 
@@ -210,7 +208,6 @@ function Map({language }) {
               fillColor:  'green',
               weight: 2,
               opacity: 1,
-              color: 'white',
               dashArray: '3',
               fillOpacity: 0.5
             })}
