@@ -30,3 +30,12 @@
   .legend-color-green {
     background-color: green;
   }
+
+  .legend-color-multi {
+    background: linear-gradient(45deg, #ff9999, #99ff99, #9999ff);
+  }
+  
+  .legend-color-green-border {
+    background-color: transparent;
+    border: 5px solid green;
+  }

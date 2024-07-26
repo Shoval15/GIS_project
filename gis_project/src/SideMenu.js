@@ -7,7 +7,9 @@ function SideMenu({handleSend, bounds, language, loading}) {
   const [formData, setFormData] = useState({
     projectStatus: '',
     apartmentType: 'existing',
-    distance: '0.93'
+    distance: '0.93',
+    sqMeterPerResident: '3',
+    residentsPerApartment: '3.5'
   });
 
   const handleChange = (e) => {
@@ -32,7 +34,7 @@ function SideMenu({handleSend, bounds, language, loading}) {
 
   return (
     <div className={`side-menu ${language === 'he' ? 'rtl-text' : 'ltr-text'}`}>
-      <img src="logo.png" alt="Logo" className="side-menu-logo" />
+      {/* <img src="logo.png" alt="Logo" className="side-menu-logo" /> */}
       <form className="side-menu-form" onSubmit={handleSubmit}>
         <div className="form-group">
           <label className="form-label">{strings.apartmentType[language]}:</label>
@@ -70,11 +72,11 @@ function SideMenu({handleSend, bounds, language, loading}) {
               onChange={handleChange}
             >
               <option value="">{strings.chooseStatus[language]}</option>
-              <option value="היתר בניה">{strings.buildingPermit[language]}</option>
-              <option value="נפתח תיק היתר">{strings.permitFileOpened[language]}</option>
-              <option value="תכנית מאושרת">{strings.approvedPlan[language]}</option>
+              <option value={`פתיחת תיק תב"ע`}>{strings.urbanPlanFileOpened[language]}</option>
               <option value="הפקדה">{strings.deposit[language]}</option>
-              <option value="פתיחת תיק תבע">{strings.urbanPlanFileOpened[language]}</option>
+              <option value="תכנית מאושרת">{strings.approvedPlan[language]}</option>
+              <option value="נפתח תיק היתר">{strings.permitFileOpened[language]}</option>
+              <option value="היתר בנייה">{strings.buildingPermit[language]}</option>
             </select>
           </div>
         )}
@@ -93,6 +95,43 @@ function SideMenu({handleSend, bounds, language, loading}) {
               min="0"
             />
             <span className="input-label">{strings.km[language]}</span>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="sqMeterPerResident" className="form-label">
+            {strings.sqMeterPerResident[language]}:
+          </label>
+          <div className="input-group col-md-6">
+            <input 
+              type="number" 
+              id="sqMeterPerResident" 
+              name="sqMeterPerResident"
+              className="form-input"
+              value={formData.sqMeterPerResident}
+              onChange={handleChange}
+              step="0.1"
+              min="0.5"
+            />
+            <span className="input-label">{strings.sqm[language]}</span>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label htmlFor="residentsPerApartment" className="form-label">
+            {strings.residentsPerApartment[language]}:
+          </label>
+          <div className="input-group col-md-6">
+            <input 
+              type="number" 
+              id="residentsPerApartment" 
+              name="residentsPerApartment"
+              className="form-input"
+              value={formData.residentsPerApartment}
+              onChange={handleChange}
+              step="0.5"
+              min="1"
+            />
           </div>
         </div>
         {!bounds && (

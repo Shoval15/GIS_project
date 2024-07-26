@@ -4,8 +4,8 @@ export const strings = {
         en: 'Building ID'
     },
     gardenID: {
-        he: 'מזהה גינה',
-        en: 'Garden ID'
+        he: 'מזהה שטח ציבורי פתוח',
+        en: 'Open public space ID'
     },
     address: {
         he: 'כתובת',
@@ -52,16 +52,16 @@ export const strings = {
         en: 'Results'
     },
     totalApartments: {
-        he: 'סך הכל דירות',
-        en: 'Total Apartments'
+        he: 'סך הכל יחידות דיור',
+        en: 'Total apartments'
     },
     allocatedApartments: {
-        he: 'דירות שהוקצו',
-        en: 'Allocated Apartments'
+        he: 'יחידות דיור שהוקצו',
+        en: 'Allocated apartments'
     },
     notAllocatedApartments: {
-        he: 'דירות שלא הוקצו',
-        en: 'Not Allocated Apartments'
+        he: 'יחידות דיור שלא הוקצו',
+        en: 'Not Allocated apartments'
     },
     allocationPercentage: {
         he: 'אחוז הקצאה',
@@ -113,7 +113,7 @@ export const strings = {
       },
       maxDistanceBuildingToGarden: {
         he: 'מרחק מקסימלי בין בניין לשצ"פ',
-        en: 'Max Distance Between Building and Garden'
+        en: 'Max Distance'
       },
       km: {
         he: 'ק"מ',
@@ -132,27 +132,27 @@ export const strings = {
         en: 'Send'
       },
       legend: {
-        he: 'מקרא',
-        en: 'Legend'
+        en: "Legend",
+        he: "מקרא"
       },
-      buildingsWithAssignedGarden: {
-        he: 'בניינים ששובץ להם שצ"פ',
-        en: 'Buildings with assigned garden'
+      buildingsAndAssignedGardens: {
+        en: "Buildings and their assigned open public spaces",
+        he: "בניינים והשטחים הציבוריים המוקצים להם"
       },
       buildingsWithoutAssignedGarden: {
-        he: 'בניינים ללא שיבוץ שצ"פ',
-        en: 'Buildings without assigned garden'
+        en: "Buildings without assigned open public space",
+        he: "בניינים ללא שטח ציבורי פתוח מוקצה"
       },
-      garden: {
-        he: 'שצ"פ',
-        en: 'Garden'
+      gardenBorder: {
+        en: "Open public space border",
+        he: "גבול שטח ציבורי פתוח"
       },
       smallPolygon: {
         he: 'יש לבחור שטח העולה על 10 דונם ',
         en: 'Please select an area larger than 10 dunams (10,000 square meters)'
       },
       importLayer: {
-        he: 'זמנית לא ניתן להתחבר לשירותי Jerusalem GIS. ניתן לנסות שוב בשלב מאוחר יותר',
+        he: 'זמנית לא ניתן להתחבר לשירותי מערכת המפות של ירושלים',
         en: 'Unable to connect to Jerusalem GIS services at the moment. Please try again later'
       },
       close: {
@@ -166,6 +166,18 @@ export const strings = {
       explanation: {
         he: 'תכנון חכם לעיר ירוקה יותר',
         en: 'Smart Planning for a Greener City'
-      }
+      },
+      sqMeterPerResident: {
+        en: "Square meters for resident",
+        he: "מטרים רבועים מוקצים לתושב"
+      },
+      residentsPerApartment: {
+        en: "Residents per apartment",
+        he: "כמות תושבים לדירה"
+      },
+      sqm: {
+        en: "sq.m",
+        he: "מ\"ר"
+      },
 
 };

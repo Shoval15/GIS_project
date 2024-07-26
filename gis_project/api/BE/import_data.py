@@ -10,9 +10,10 @@ from shapely.geometry import  Polygon
 from . import utilities
 import osmnx as ox
 from urllib.parse import urlencode, quote
+import urllib.parse
 
 
-def make_arcgis_query_selenium(layer_number, xmin, ymin, xmax, ymax, out_fields="*", where="1=1"):
+def make_arcgis_query_selenium(layer_number, bounds_polygon, out_fields="*", where="1=1"):
     base_url = "https://gisviewer.jerusalem.muni.il/arcgis/rest/services/BaseLayers/MapServer"
     # Set up Chrome options
     chrome_options = Options()
@@ -24,10 +25,14 @@ def make_arcgis_query_selenium(layer_number, xmin, ymin, xmax, ymax, out_fields=
     chrome_options.add_argument("--window-size=1920,1080")
     chrome_options.add_argument("--disable-extensions")
     driver = webdriver.Chrome(options=chrome_options)
-    geometry_dict = json.loads(f'{{"xmin":{xmin},"ymin":{ymin},"xmax":{xmax},"ymax":{ymax}}}')
+    # Calculate bounding box (xmin, ymin, xmax, ymax)
+    minx, miny, maxx, maxy = bounds_polygon.bounds
+    geometry_dict = json.loads(f'{{"xmin":{minx},"ymin":{miny},"xmax":{maxx},"ymax":{maxy}}}')
     params = {'geometry': json.dumps(geometry_dict)}
+
     # Use urlencode to convert the dictionary to a URL-encoded string
-    encoded_geometry = urlencode(params) 
+    encoded_geometry = urlencode(params)
+
     encoded_out_fields = quote(out_fields)
     encoded_where = quote(where)
     try:
@@ -43,6 +48,7 @@ def make_arcgis_query_selenium(layer_number, xmin, ymin, xmax, ymax, out_fields=
                f"outSR=&returnIdsOnly=false&returnCountOnly=false&"
                f"returnDistinctValues=false&returnTrueCurves=false&"
                f"f=json")
+        print(url)
         driver.get(url)
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.TAG_NAME, 'body'))
@@ -57,14 +63,11 @@ def make_arcgis_query_selenium(layer_number, xmin, ymin, xmax, ymax, out_fields=
         driver.quit()
 
 
-def import_buildings(selected_polygon):
-    # Calculate bounding box (xmin, ymin, xmax, ymax)
-    minx, miny, maxx, maxy = selected_polygon.bounds
+def import_buildings(bounds, polygon):
     out_fields = "OBJECTID,CID,MAX_rel_he,MAX_med_he,BLDG_NUM_1,BLDG_TYPE_,NUM_FLOORS,\
                     NUM_ENTR_1,NUM_APTS_C,semel_bait,StreetName,StreetNa_1,X_1,Y_1,\
                     StreetCode,BldNum_1,Shape,Shape.STArea(),Shape.STLength()"
-    # json_res = make_arcgis_query_selenium_old(minx, miny, maxx, maxy)
-    json_res = make_arcgis_query_selenium('370', minx, miny, maxx, maxy, out_fields)
+    json_res = make_arcgis_query_selenium('370', bounds, out_fields)
     features = json_res['features']
     attributes = [feature['attributes'] for feature in features]
     geometries = [feature['geometry']['rings'][0] for feature in features]
@@ -75,14 +78,13 @@ def import_buildings(selected_polygon):
     # Set the coordinate reference system (CRS)
     gdf.set_crs(epsg=json_res['spatialReference']['wkid'], inplace=True)
     gdf['geometry'] = gdf['geometry'].apply(utilities.convert_coords)
+    gdf = utilities.filter_gdf_by_polygon(gdf, polygon)
     return gdf
 
-def import_urban_renewal(selected_polygon):
-    # Calculate bounding box (xmin, ymin, xmax, ymax)
-    minx, miny, maxx, maxy = selected_polygon.bounds
+def import_urban_renewal(bounds, polygon):
     out_fields = "OBJECTID, num, name, maslul, yazam, units_e, units_p, tichnun_s, date,\
                     start, info, picture, units_a, status_num, adress, schunah, Shape.STArea(), Shape"
-    json_res = make_arcgis_query_selenium('183', minx, miny, maxx, maxy, out_fields)
+    json_res = make_arcgis_query_selenium('183', bounds, out_fields)
     features = json_res['features']
     attributes = [feature['attributes'] for feature in features]
     geometries = [feature['geometry']['rings'][0] for feature in features]
@@ -93,13 +95,12 @@ def import_urban_renewal(selected_polygon):
     # Set the coordinate reference system (CRS)
     gdf.set_crs(epsg=json_res['spatialReference']['wkid'], inplace=True)
     gdf['geometry'] = gdf['geometry'].apply(utilities.convert_coords)
+    gdf = utilities.filter_gdf_by_polygon(gdf, polygon)
     return gdf
 
-def import_gardens(selected_polygon):
-    # Calculate bounding box (xmin, ymin, xmax, ymax)
-    minx, miny, maxx, maxy = selected_polygon.bounds
+def import_gardens(bounds, polygon):
     out_fields = "OBJECTID, Shape.STArea(), YEUD, Descr "
-    json_res = make_arcgis_query_selenium('50', minx, miny, maxx, maxy, out_fields, where='YEUD=670')
+    json_res = make_arcgis_query_selenium('50', bounds, out_fields, where='YEUD=670')
     features = json_res['features']
     attributes = [feature['attributes'] for feature in features]
     geometries = [feature['geometry']['rings'][0] for feature in features]
@@ -110,6 +111,7 @@ def import_gardens(selected_polygon):
     # Set the coordinate reference system (CRS)
     gdf.set_crs(epsg=json_res['spatialReference']['wkid'], inplace=True)
     gdf['geometry'] = gdf['geometry'].apply(utilities.convert_coords)
+    gdf = utilities.filter_gdf_by_polygon(gdf, polygon)
     return gdf
 
 def union_building_and_renewal(buildings_gdf, renewal_gdf):
@@ -137,15 +139,14 @@ def union_building_and_renewal(buildings_gdf, renewal_gdf):
     result_gdf = gpd.GeoDataFrame(result_gdf, geometry='geometry')
     # reset the index
     result_gdf = result_gdf.reset_index(drop=True)
+    print(result_gdf)
     return result_gdf
 
 def import_walking_paths(selected_polygon):
     # selected_polygon = utilities.convert_coords(selected_polygon)
-    # Calculate bounding box (xmin, ymin, xmax, ymax)
-    minx, miny, maxx, maxy = selected_polygon.bounds
     mode = 'walk'
     # Create the graph of the area from OSM data. It will download the data and create the graph
-    G = ox.graph_from_bbox(bbox=(miny, maxy, minx, maxx), network_type=mode)
+    G = ox.graph_from_polygon(polygon=selected_polygon, network_type=mode)
     # Check if the graph is empty
     if len(G.nodes) == 0 or len(G.edges) == 0:
         return None
@@ -154,5 +155,5 @@ def import_walking_paths(selected_polygon):
         G = ox.add_edge_speeds(G)
         G = ox.add_edge_travel_times(G)
     except Exception:
-        return None
+        return G
     return G

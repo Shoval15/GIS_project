@@ -9,16 +9,16 @@ const Legend = ({ language }) => {
       <Card.Body>
         <Card.Title>{strings.legend[language]}</Card.Title>
         <div className="legend-item">
-          <div className="legend-color legend-color-blue"></div>
-          <span>{strings.buildingsWithAssignedGarden[language]}</span>
+          <div className="legend-color legend-color-multi"></div>
+          <span>{strings.buildingsAndAssignedGardens[language]}</span>
         </div>
         <div className="legend-item">
           <div className="legend-color legend-color-red"></div>
           <span>{strings.buildingsWithoutAssignedGarden[language]}</span>
         </div>
         <div className="legend-item">
-          <div className="legend-color legend-color-green"></div>
-          <span>{strings.garden[language]}</span>
+          <div className="legend-color legend-color-green-border"></div>
+          <span>{strings.gardenBorder[language]}</span>
         </div>
       </Card.Body>
     </Card>

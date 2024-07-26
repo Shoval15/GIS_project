@@ -2,68 +2,44 @@ from . import utilities
 import json
 import geopandas as gpd
 import numpy as np
+from collections import defaultdict
 
-def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths, distance, apartment_type, project_status):
-    buildings_gdf, gardens_gdf = utilities.preprocess_data(buildings_gdf, gardens_gdf, walking_paths, apartment_type, project_status, distance)
+def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths, distance, apartment_type, project_status, meters_for_resident, residents):
+    buildings_gdf, gardens_gdf = utilities.preprocess_data(buildings_gdf, gardens_gdf, walking_paths, apartment_type, project_status, distance, meters_for_resident, residents)
     
-    # Create a list of gardens with their capacities
-    gardens = [(garden['OBJECTID'], garden['capacity']) for _, garden in gardens_gdf.iterrows()]
+    allocation = defaultdict(list)
     
-    # Create a list of buildings with their apartment counts
-    buildings = [(building['OBJECTID'], building['apartments']) for _, building in buildings_gdf.iterrows()]
-    
-    # Sort buildings by apartment count (descending)
-    buildings.sort(key=lambda x: x[1], reverse=True)
-    
-    def knapsack(gardens, buildings):
-        n = len(buildings)
-        m = sum(garden[1] for garden in gardens)
-        
-        # Initialize the dynamic programming table
-        dp = [[0 for _ in range(m + 1)] for _ in range(n + 1)]
-        
-        # Fill the dp table
-        for i in range(1, n + 1):
-            for w in range(1, m + 1):
-                if buildings[i-1][1] <= w:
-                    dp[i][w] = max(buildings[i-1][1] + dp[i-1][w-buildings[i-1][1]], dp[i-1][w])
-                else:
-                    dp[i][w] = dp[i-1][w]
-        
-        # Backtrack to find the solution
-        allocation = {}
-        i, w = n, m
-        while i > 0 and w > 0:
-            if dp[i][w] != dp[i-1][w]:
-                building_id = buildings[i-1][0]
-                # Find the first garden with enough capacity
-                for garden_id, capacity in gardens:
-                    if capacity >= buildings[i-1][1]:
-                        allocation[building_id] = garden_id
-                        gardens = [(g_id, cap - buildings[i-1][1]) if g_id == garden_id else (g_id, cap) for g_id, cap in gardens]
+    # Sort gardens by capacity (descending)
+    gardens_sorted = gardens_gdf.sort_values('capacity', ascending=False)
+
+    # Multiple iterations
+    for pass_num in range(3): 
+        for idx, garden in gardens_sorted.iterrows():
+            remaining_capacity = garden['remaining_capacity']
+            nearby_buildings = sorted(garden['nearby_buildings'], key=lambda x: x[1])  # Sort by distance
+            
+            for building_ID, _, apartments in nearby_buildings:
+                if building_ID not in [b[0] for b in allocation[garden['OBJECTID']]] and remaining_capacity > 0:
+                    apartments_to_allocate = min(apartments, remaining_capacity)
+                    allocation[garden['OBJECTID']].append((building_ID, apartments_to_allocate))
+                    gardens_gdf.loc[gardens_gdf['OBJECTID'] == garden['OBJECTID'], 'remaining_capacity'] -= apartments_to_allocate
+                    remaining_capacity -= apartments_to_allocate                    
+                    if remaining_capacity <= 0:
                         break
-                w -= buildings[i-1][1]
-            i -= 1
-        
-        return allocation
-
-    # Run the knapsack algorithm
-    allocation = knapsack(gardens, buildings)
 
     # Create GeoDataFrames for allocated and not allocated buildings
-    allocated_buildings = buildings_gdf[buildings_gdf['OBJECTID'].isin(allocation.keys())].copy()
-    allocated_buildings['allocated_garden'] = allocated_buildings['OBJECTID'].map(allocation)
-    not_allocated_buildings = buildings_gdf[~buildings_gdf['OBJECTID'].isin(allocation.keys())].copy()
+    allocated_building_ids = [b[0] for alloc in allocation.values() for b in alloc]
+    allocated_buildings = buildings_gdf[buildings_gdf['OBJECTID'].isin(allocated_building_ids)].copy()
+    allocated_buildings['allocated_garden'] = allocated_buildings['OBJECTID'].map({b: g for g, alloc in allocation.items() for b, _ in alloc})
+    not_allocated_buildings = buildings_gdf[~buildings_gdf['OBJECTID'].isin(allocated_building_ids)].copy()
 
-    # Merge allocated buildings with garden details
     merged_data = allocated_buildings.merge(
-        gardens_gdf[['OBJECTID', 'Shape.STArea()', 'YEUD', 'Descr', 'capacity']], 
+        gardens_gdf[['OBJECTID', 'Shape.STArea()', 'YEUD', 'Descr', 'capacity', 'remaining_capacity']], 
         left_on='allocated_garden', 
         right_on='OBJECTID', 
         suffixes=('_building', '_garden')
     )
 
-    # Rename columns to avoid confusion
     merged_data = merged_data.rename(columns={
         'OBJECTID_building': 'OBJECTID_building',
         'OBJECTID_garden': 'OBJECTID_garden',
@@ -78,19 +54,17 @@ def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths, distanc
     with open('allocated_buildings_with_gardens.json', 'w', encoding='utf-8') as f:
         json.dump(geojson_data, f, ensure_ascii=False, indent=4)
 
-    # Calculate allocation statistics
-    total_apartments = buildings_gdf['apartments'].sum()
-    allocated_apartments = allocated_buildings['apartments'].sum()
-    not_allocated_apartments = total_apartments - allocated_apartments
-    allocation_stats = {
-        "total_apartments": int(total_apartments),
-        "allocated_apartments": int(allocated_apartments),
-        "not_allocated_apartments": int(not_allocated_apartments),
-        "allocation_percentage": (allocated_apartments / total_apartments) * 100 if total_apartments > 0 else 0
-    }
 
-    # Update remaining capacity for gardens
-    for garden_id, capacity in gardens:
-        gardens_gdf.loc[gardens_gdf['OBJECTID'] == garden_id, 'remaining_capacity'] = capacity
+    with open('not_allocated_buildings.json', 'w', encoding='utf-8') as f:
+        geojson_data = json.loads(not_allocated_buildings.to_json())
+        json.dump(geojson_data, f, ensure_ascii=False, indent=4)
 
-    return merged_data, not_allocated_buildings, geojson_data, allocation_stats, gardens_gdf
+
+    # Write to JSON file
+    with open('gardens_after_allocation.json', 'w', encoding='utf-8') as f:
+        geojson_data_gardens = gardens_gdf.to_json()
+        f.write(geojson_data_gardens)
+
+    allocation_stats = utilities.calculate_stats(buildings_gdf, merged_data)
+    
+    return merged_data, not_allocated_buildings, allocation_stats, gardens_gdf

@@ -1,13 +1,9 @@
 from . import utilities
 import json
-import geopandas as gpd
 
-def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths, distance, apartment_type, project_status):
-    buildings_gdf, gardens_gdf = utilities.preprocess_data(buildings_gdf, gardens_gdf, walking_paths, apartment_type, project_status, distance)
-    allocation = {}
-    total_apartments = len(buildings_gdf)
-    allocated_apartments = 0
-    
+def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths, distance, apartment_type, project_status,  meters_for_resident, residents):
+    buildings_gdf, gardens_gdf = utilities.preprocess_data(buildings_gdf, gardens_gdf, walking_paths, apartment_type, project_status, distance,  meters_for_resident, residents)
+    allocation = {}    
     # Sort gardens by capacity (descending)
     gardens_sorted = gardens_gdf.sort_values('capacity', ascending=False)
 
@@ -42,20 +38,20 @@ def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths, distanc
         'Shape.STArea()_garden': 'Shape.STArea()_garden',
     })
 
-    # Convert to GeoJSON
-    geojson_data = json.loads(merged_data.to_json())
-
     # Write to JSON file
     with open('allocated_buildings_with_gardens.json', 'w', encoding='utf-8') as f:
+        geojson_data = json.loads(merged_data.to_json())
         json.dump(geojson_data, f, ensure_ascii=False, indent=4)
 
-    # Calculate allocation statistics
-    allocated_apartments = len(allocated_buildings)
-    not_allocated_apartments = total_apartments - allocated_apartments
-    allocation_stats = {
-        "total_apartments": total_apartments,
-        "allocated_apartments": allocated_apartments,
-        "not_allocated_apartments": not_allocated_apartments,
-        "allocation_percentage": (allocated_apartments / total_apartments) * 100 if total_apartments > 0 else 0
-    }
-    return merged_data, not_allocated_buildings, geojson_data, allocation_stats, gardens_gdf
+    # Write to JSON file
+    with open('gardens_after_allocation.json', 'w', encoding='utf-8') as f:
+        geojson_data_gardens = gardens_gdf.to_json()
+        f.write(geojson_data_gardens)
+
+    # Write to JSON file
+    with open('not_allocated_buildings.json', 'w', encoding='utf-8') as f:
+        geojson_data_not_allocated_buildings = not_allocated_buildings.to_json()
+        f.write(geojson_data_not_allocated_buildings)
+
+    allocation_stats = utilities.calculate_stats(buildings_gdf, merged_data)
+    return merged_data, not_allocated_buildings, allocation_stats, gardens_gdf

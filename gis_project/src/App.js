@@ -23,7 +23,6 @@ function App() {
     <Logo language={language} toggleLanguage={toggleLanguage}/>
     <br></br>
     <Map language={language}/>
-    <br></br>
     <Footer language={language} />
 </div>
   );
