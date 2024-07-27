@@ -256,11 +256,19 @@ def calculate_stats(buildings_gdf, allocated_buildings_gdf):
     allocated_apartments = int(allocated_buildings_gdf['units_e'].sum())
     not_allocated_apartments = total_apartments - allocated_apartments
     
+    total_buildings = len(buildings_gdf)
+    allocated_buildings = len(allocated_buildings_gdf)
+    not_allocated_buildings = total_buildings - allocated_buildings
+    
     allocation_stats = {
         "total_apartments": total_apartments,
         "allocated_apartments": allocated_apartments,
         "not_allocated_apartments": not_allocated_apartments,
-        "allocation_percentage": (allocated_apartments / total_apartments) * 100 if total_apartments > 0 else 0
+        "apartment_allocation_percentage": (allocated_apartments / total_apartments) * 100 if total_apartments > 0 else 0,
+        "total_buildings": total_buildings,
+        "allocated_buildings": allocated_buildings,
+        "not_allocated_buildings": not_allocated_buildings,
+        "building_allocation_percentage": (allocated_buildings / total_buildings) * 100 if total_buildings > 0 else 0
     }
 
     return allocation_stats

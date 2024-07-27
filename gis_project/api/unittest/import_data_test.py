@@ -1,5 +1,8 @@
 import unittest
 from shapely.geometry import Polygon
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Services import import_data
 
 class TestImportData(unittest.TestCase):

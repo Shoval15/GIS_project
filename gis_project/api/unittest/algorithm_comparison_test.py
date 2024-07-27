@@ -44,25 +44,30 @@ class TestAlgorithmComparison(unittest.TestCase):
         end_time = time.time()
 
         execution_time = end_time - start_time
-        allocated_percentage = allocation_stats['allocation_percentage']
+        apartment_allocation_percentage = allocation_stats['apartment_allocation_percentage']
+        building_allocation_percentage = allocation_stats['building_allocation_percentage']
         
         print(f"\n{name} Algorithm Results:")
         print(f"Execution Time: {execution_time:.2f} seconds")
-        print(f"Allocated Percentage: {allocated_percentage:.2f}%")
+        print(f"Apartment Allocation Percentage: {apartment_allocation_percentage:.2f}%")
+        print(f"Building Allocation Percentage: {building_allocation_percentage:.2f}%")
         print(f"Total Apartments: {allocation_stats['total_apartments']}")
         print(f"Allocated Apartments: {allocation_stats['allocated_apartments']}")
         print(f"Not Allocated Apartments: {allocation_stats['not_allocated_apartments']}")
+        print(f"Total Buildings: {allocation_stats['total_buildings']}")
+        print(f"Allocated Buildings: {allocation_stats['allocated_buildings']}")
+        print(f"Not Allocated Buildings: {allocation_stats['not_allocated_buildings']}")
 
-        return execution_time, allocated_percentage, allocation_stats
+        return execution_time, apartment_allocation_percentage, building_allocation_percentage, allocation_stats
 
     def test_algorithm_comparison(self):
         print("\nComparing Greedy and Knapsack Algorithms:")
         
-        greedy_time, greedy_percentage, greedy_stats = self.run_algorithm(
+        greedy_time, greedy_apt_percentage, greedy_bldg_percentage, greedy_stats = self.run_algorithm(
             greedy_algorithm_topo.garden_centric_allocation, "Greedy"
         )
         
-        knapsack_time, knapsack_percentage, knapsack_stats = self.run_algorithm(
+        knapsack_time, knapsack_apt_percentage, knapsack_bldg_percentage, knapsack_stats = self.run_algorithm(
             knapsack_problem.garden_centric_allocation, "Knapsack"
         )
 
@@ -70,18 +75,27 @@ class TestAlgorithmComparison(unittest.TestCase):
         print(f"Greedy Algorithm Time: {greedy_time:.2f} seconds")
         print(f"Knapsack Algorithm Time: {knapsack_time:.2f} seconds")
         print(f"Time Difference: {abs(greedy_time - knapsack_time):.2f} seconds")
-        print(f"Greedy Allocation Percentage: {greedy_percentage:.2f}%")
-        print(f"Knapsack Allocation Percentage: {knapsack_percentage:.2f}%")
-        print(f"Allocation Difference: {abs(greedy_percentage - knapsack_percentage):.2f}%")
+        print(f"Greedy Apartment Allocation Percentage: {greedy_apt_percentage:.2f}%")
+        print(f"Knapsack Apartment Allocation Percentage: {knapsack_apt_percentage:.2f}%")
+        print(f"Apartment Allocation Difference: {abs(greedy_apt_percentage - knapsack_apt_percentage):.2f}%")
+        print(f"Greedy Building Allocation Percentage: {greedy_bldg_percentage:.2f}%")
+        print(f"Knapsack Building Allocation Percentage: {knapsack_bldg_percentage:.2f}%")
+        print(f"Building Allocation Difference: {abs(greedy_bldg_percentage - knapsack_bldg_percentage):.2f}%")
 
-        # Assert that both algorithms allocate some apartments
+        # Assert that both algorithms allocate some apartments and buildings
         self.assertGreater(greedy_stats['allocated_apartments'], 0)
         self.assertGreater(knapsack_stats['allocated_apartments'], 0)
+        self.assertGreater(greedy_stats['allocated_buildings'], 0)
+        self.assertGreater(knapsack_stats['allocated_buildings'], 0)
 
         # Check if one algorithm significantly outperforms the other
-        if abs(greedy_percentage - knapsack_percentage) > 10:
-            better_algorithm = "Knapsack" if knapsack_percentage > greedy_percentage else "Greedy"
-            print(f"\nNote: {better_algorithm} algorithm performed significantly better in terms of allocation percentage.")
+        if abs(greedy_apt_percentage - knapsack_apt_percentage) > 10:
+            better_algorithm = "Knapsack" if knapsack_apt_percentage > greedy_apt_percentage else "Greedy"
+            print(f"\nNote: {better_algorithm} algorithm performed significantly better in terms of apartment allocation percentage.")
+
+        if abs(greedy_bldg_percentage - knapsack_bldg_percentage) > 10:
+            better_algorithm = "Knapsack" if knapsack_bldg_percentage > greedy_bldg_percentage else "Greedy"
+            print(f"\nNote: {better_algorithm} algorithm performed significantly better in terms of building allocation percentage.")
 
         if abs(greedy_time - knapsack_time) > 5:
             faster_algorithm = "Knapsack" if knapsack_time < greedy_time else "Greedy"

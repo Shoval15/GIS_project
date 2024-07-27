@@ -179,5 +179,33 @@ export const strings = {
         en: "sq.m",
         he: "מ\"ר"
       },
+      apartmentStats: {
+        en: "Apartment Statistics",
+        he: "נתוני דירות"
+      },
+      buildingStats: {
+        en: "Building Statistics",
+        he: "נתוני בניינים"
+      },
+      totalBuildings: {
+        en: "Total Buildings",
+        he: "סך הכל בניינים"
+      },
+      allocatedBuildings: {
+        en: "Allocated Buildings",
+        he: "בניינים שהוקצו"
+      },
+      notAllocatedBuildings: {
+        en: "Not Allocated Buildings",
+        he: "בניינים שלא הוקצו"
+      },
+      buildingAllocationPercentage: {
+        en: "Building Allocation Percentage",
+        he: "אחוז הקצאת בניינים"
+      },
+      apartmentAllocationPercentage: {
+        en: "Apartment Allocation Percentage",
+        he: "אחוז הקצאת דירות"
+      },
 
 };

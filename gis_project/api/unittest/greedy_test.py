@@ -1,6 +1,9 @@
 import unittest
 import geopandas as gpd
 from shapely.geometry import Point, Polygon
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Services import greedy_algorithm_topo
 from Services import utilities
 

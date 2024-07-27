@@ -118,8 +118,14 @@ function Map({language }) {
     .then(response => response.json())
     .then(data => {
       if (data.status === 'failed') {
-        console.log(data)
-        setErrorMessage(strings[data.response][language]);
+        if (data.response in strings)
+        {
+          setErrorMessage(strings[data.response][language]);
+        }
+        else
+        {
+          setErrorMessage(data.response);
+        }
       } else {
         setAllocatedLayer(data.response.allocated_layer);
         setNotAllocatedLayer(data.response.not_allocated_layer);

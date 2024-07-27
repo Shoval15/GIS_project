@@ -1,5 +1,8 @@
 import unittest
 from shapely.geometry import Point, Polygon
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Services import utilities
 import geopandas as gpd
 

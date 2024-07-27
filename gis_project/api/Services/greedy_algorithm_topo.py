@@ -38,20 +38,20 @@ def garden_centric_allocation(buildings_gdf, gardens_gdf, walking_paths, distanc
         'Shape.STArea()_garden': 'Shape.STArea()_garden',
     })
 
-    # Write to JSON file
-    with open('allocated_buildings_with_gardens.json', 'w', encoding='utf-8') as f:
-        geojson_data = json.loads(merged_data.to_json())
-        json.dump(geojson_data, f, ensure_ascii=False, indent=4)
+    # # Write to JSON file
+    # with open('allocated_buildings_with_gardens.json', 'w', encoding='utf-8') as f:
+    #     geojson_data = json.loads(merged_data.to_json())
+    #     json.dump(geojson_data, f, ensure_ascii=False, indent=4)
 
-    # Write to JSON file
-    with open('gardens_after_allocation.json', 'w', encoding='utf-8') as f:
-        geojson_data_gardens = gardens_gdf.to_json()
-        f.write(geojson_data_gardens)
+    # # Write to JSON file
+    # with open('gardens_after_allocation.json', 'w', encoding='utf-8') as f:
+    #     geojson_data_gardens = gardens_gdf.to_json()
+    #     f.write(geojson_data_gardens)
 
-    # Write to JSON file
-    with open('not_allocated_buildings.json', 'w', encoding='utf-8') as f:
-        geojson_data_not_allocated_buildings = not_allocated_buildings.to_json()
-        f.write(geojson_data_not_allocated_buildings)
+    # # Write to JSON file
+    # with open('not_allocated_buildings.json', 'w', encoding='utf-8') as f:
+    #     geojson_data_not_allocated_buildings = not_allocated_buildings.to_json()
+    #     f.write(geojson_data_not_allocated_buildings)
 
     allocation_stats = utilities.calculate_stats(buildings_gdf, merged_data)
     return merged_data, not_allocated_buildings, allocation_stats, gardens_gdf
