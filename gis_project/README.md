@@ -1,70 +1,55 @@
-# Getting Started with Create React App
+# UrbanGreenSpace Analyzer
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Overview
 
-## Available Scripts
+UrbanGreenSpace Analyzer is an innovative decision support system for urban planning, focusing on the analysis and management of public open spaces (POS) in cities. This system addresses the growing challenge of efficient urban planning while meeting legal requirements for allocating open spaces to residents.
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- Import and analyze precise geographical data
+- Calculate real walking distances between buildings and public open spaces
+- Automatically allocate buildings to POS considering capacity and distance constraints
+- Interactive visualization of analysis results on a map
+- Detailed statistics on POS accessibility in a selected area
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Technology Stack
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Backend: Python with Flask
+- Frontend: React.js with Leaflet for interactive maps
+- Data Processing: GeoPandas, Shapely, OSMNX
+- Data Source: Jerusalem Municipality GIS system
 
-### `npm test`
+## Installation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Clone the repository: https://github.com/Shoval15/GIS_project.git
+2. Install backend dependencies: 
+    cd gis_project/api
+    pip install -r requirements.txt
+3. Install frontend dependencies:
+    cd ..
+    npm install
 
-### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Usage
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+1. Start the backend server:
+    cd gis_project/api
+    python app.py
+2. Start the frontend development server:
+    cd ..
+    npm start
+3. Open your browser and navigate to `http://localhost:3000`
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## API Endpoints
 
-### `npm run eject`
+- `POST /api/bounds`: Analyze an area based on given bounds and parameters
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## Testing
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+To run the tests:
+    python -m unittest discover tests
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## Acknowledgments And Idea
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- Dr. Asaf Spanier for project guidance (JCE)
+- Jerusalem Municipality for providing access to their GIS data

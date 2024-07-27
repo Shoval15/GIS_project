@@ -1,13 +1,12 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from BE import import_data
-from BE import greedy_algorithm_topo
-from BE import knapsack_problem
+from Services import import_data
+from Services import greedy_algorithm_topo
+from Services import knapsack_problem
 from shapely.geometry import Polygon
-from BE import utilities
+from Services import utilities
 import geopandas as gpd
 import json
-from firebase_functions import https_fn
 import time
 
 DEBUGGING = False
@@ -125,10 +124,5 @@ def get_bounds():
                         'gardens_layer': gardens_layer
                     }})
 
-# @https_fn.on_request()
-# def serve_flask_app(request):
-#     with app.test_request_context():
-#         return app.full_dispatch_request()
-    
 if __name__ == '__main__':
     app.run(debug=True)

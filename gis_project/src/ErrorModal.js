@@ -1,7 +1,7 @@
 import React from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { strings } from './strings';
+import { strings } from './utilities/strings';
 import './styles/ErrorModal.css';
 
 function ErrorModal({ show, onHide, message, language }) {
