@@ -114,7 +114,6 @@ def preprocess_data(buildings_gdf, gardens_gdf, G, apartment_type, project_statu
             valid_statuses = status_order[:current_status_index + 1]
             if 'תכנית מאושרת' in valid_statuses:
                 valid_statuses.append('מאושרת')
-            print(valid_statuses)
             # Filter the buildings
             buildings_gdf = buildings_gdf[
                 (buildings_gdf['gen_status'] != 'renewal') | 
@@ -150,7 +149,6 @@ def preprocess_data(buildings_gdf, gardens_gdf, G, apartment_type, project_statu
     
     # Calculate distances between gardens and buildings
     gardens_gdf['nearby_buildings'] = gardens_gdf.apply(lambda x: find_nearby_buildings(x, filtered_buildings, G,  max_distance), axis=1)
-    print(filtered_buildings)
     return filtered_buildings, gardens_gdf
 
 def swap_coordinates(geom):
@@ -249,9 +247,7 @@ def check_polygon_size(polygon, min_area=10000):
 
 def filter_gdf_by_polygon(gdf, polygon):
     polygon = Polygon([(y, x) for x, y in polygon.exterior.coords])
-    print(polygon)
     gdf_within_or_intersects_p = gdf[gdf.geometry.within(polygon) | gdf.geometry.intersects(polygon)]
-    print(gdf_within_or_intersects_p)
     return gdf_within_or_intersects_p
 
 

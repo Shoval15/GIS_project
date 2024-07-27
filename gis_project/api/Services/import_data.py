@@ -138,11 +138,9 @@ def union_building_and_renewal(buildings_gdf, renewal_gdf):
     result_gdf = gpd.GeoDataFrame(result_gdf, geometry='geometry')
     # reset the index
     result_gdf = result_gdf.reset_index(drop=True)
-    print(result_gdf)
     return result_gdf
 
 def import_walking_paths(selected_polygon):
-    # selected_polygon = utilities.convert_coords(selected_polygon)
     mode = 'walk'
     # Create the graph of the area from OSM data. It will download the data and create the graph
     G = ox.graph_from_polygon(polygon=selected_polygon, network_type=mode)

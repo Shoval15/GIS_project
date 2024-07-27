@@ -88,21 +88,18 @@ def get_bounds():
         renewal_gdf = gpd.read_file("renewal.geojson")
         gardens_gdf = gpd.read_file("gardens.geojson")
     else:
-        buildings_gdf = import_data.import_buildings(bounds_polygon, polygon)
-        buildings_gdf.to_file("buildings.geojson", driver="GeoJSON")
-        
+        buildings_gdf = import_data.import_buildings(bounds_polygon, polygon)        
         
         if buildings_gdf.empty:
             return jsonify({"status": "failed", "received": data, "response": "importLayer"})
         
         gardens_gdf = import_data.import_gardens(bounds_polygon, polygon)
-        gardens_gdf.to_file("gardens.geojson", driver="GeoJSON")
 
         if gardens_gdf.empty :
             return jsonify({"status": "failed", "received": data, "response": "importLayer"})
             
         renewal_gdf = import_data.import_urban_renewal(bounds_polygon, polygon)
-        renewal_gdf.to_file("renewal.geojson", driver="GeoJSON")
+        
     building_old_and_new_gdf = import_data.union_building_and_renewal(buildings_gdf, renewal_gdf)
     walking_paths = import_data.import_walking_paths(polygon)
     if walking_paths is None:
