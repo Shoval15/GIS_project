@@ -1,4 +1,5 @@
 # UrbanGreenSpace Analyzer
+![UrbanGreenSpace Analyzer Screenshot](logo.jpeg)
 
 ## Overview
 
