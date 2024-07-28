@@ -8,6 +8,8 @@ from shapely import wkt
 import numpy as np
 from shapely.strtree import STRtree
 import geopandas as gpd
+import pandas as pd
+from pyproj import Proj, transform
 
 # Define the order of project statuses
 status_order = [
@@ -273,3 +275,28 @@ def calculate_stats(buildings_gdf, allocated_buildings_gdf):
     }
 
     return allocation_stats
+
+
+def cut_polygons_by_intersection(gdf, polygon_P):
+    
+    # Function to cut and update a single polygon
+    def cut_polygon(row):
+        if row['geometry'].intersects(polygon_P):
+            new_geometry = row['geometry'].intersection(polygon_P)
+            utm_polygon = Polygon([transform(wgs84, utm, lon, lat) for lon, lat in new_geometry.exterior.coords])
+
+            new_area = utm_polygon.area
+            # Create a new row with updated geometry and area
+            updated_row = row.copy()
+            updated_row['geometry'] = new_geometry
+            updated_row['Shape.STArea()'] = new_area
+            return updated_row
+        return row
+    wgs84 = Proj(init='epsg:4326')
+    utm = Proj(proj="utm", zone=36, ellps="WGS84")
+
+    polygon_P  = Polygon([(y, x) for x, y in polygon_P.exterior.coords])
+    # Apply the cut_polygon function to each row
+    gdf_updated = gdf.apply(cut_polygon, axis=1)
+    return gdf_updated
+

@@ -115,6 +115,9 @@ def import_gardens(bounds, polygon):
     gdf['Descr'] = 'שטח ציבורי פתוח'
     gdf['YEUD'] = 670
     print(gdf)
+    gdf = utilities.cut_polygons_by_intersection(gdf, polygon)
+    print(gdf)
+
     return gdf
 
 def union_building_and_renewal(buildings_gdf, renewal_gdf):
