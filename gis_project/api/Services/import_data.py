@@ -98,8 +98,9 @@ def import_urban_renewal(bounds, polygon):
     return gdf
 
 def import_gardens(bounds, polygon):
-    out_fields = "OBJECTID, Shape.STArea(), YEUD, Descr "
-    json_res = make_arcgis_query_selenium('50', bounds, out_fields, where='YEUD=670')
+    out_fields = "OBJECTID, Shape.STArea(), land_use "
+    json_res = make_arcgis_query_selenium('241', bounds, out_fields, where="land_use='שטח ציבורי פתוח'")
+
     features = json_res['features']
     attributes = [feature['attributes'] for feature in features]
     geometries = [feature['geometry']['rings'][0] for feature in features]
@@ -111,6 +112,9 @@ def import_gardens(bounds, polygon):
     gdf.set_crs(epsg=json_res['spatialReference']['wkid'], inplace=True)
     gdf['geometry'] = gdf['geometry'].apply(utilities.convert_coords)
     gdf = utilities.filter_gdf_by_polygon(gdf, polygon)
+    gdf['Descr'] = 'שטח ציבורי פתוח'
+    gdf['YEUD'] = 670
+    print(gdf)
     return gdf
 
 def union_building_and_renewal(buildings_gdf, renewal_gdf):

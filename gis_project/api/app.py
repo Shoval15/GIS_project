@@ -12,7 +12,7 @@ from Services import heat
 
 
 DEBUGGING = False
-IMPORT_CACHE = True
+IMPORT_CACHE = False
 
 app = Flask(__name__)
 CORS(app) 

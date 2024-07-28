@@ -22,4 +22,4 @@ def create_heat(merged_data, not_allocated_buildings, gardens_gdf):
     # Adjust the plot to show the full extent of the data
     plt.tight_layout()
 
-    plt.show()
+    plt.savefig("fig.png")

@@ -147,6 +147,7 @@ function Map({language }) {
     layer.bindPopup(`
       <strong>${strings.buildingID[language]}:</strong> ${feature.properties.OBJECTID_building}<br>
       <strong>${strings.gardenID[language]}:</strong> ${feature.properties.OBJECTID_garden}<br>
+      <strong>${strings.projectStatus[language]}:</strong> ${feature.properties.status}<br>
       <strong>${strings.address[language]}:</strong> ${feature.properties.address}<br>
       <strong>${strings.units[language]}:</strong> ${feature.properties.units_e}<br>
       <strong>${strings.existsOrProposed[language]}:</strong> ${feature.properties.gen_status}<br>
@@ -158,6 +159,7 @@ function Map({language }) {
       <b>${strings.address[language]}:</b> ${feature.properties.address}<br>
       <b>${strings.units[language]}:</b> ${feature.properties.units_e}<br>
       <b>${strings.status[language]}:</b> ${strings.notAllocated[language]}
+      <b>${strings.projectStatus[language]}:</b> ${feature.properties.status}
     `);
   };
 

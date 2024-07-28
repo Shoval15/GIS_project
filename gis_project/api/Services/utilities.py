@@ -176,6 +176,7 @@ def create_allocated_layer(gdf):
                 'OBJECTID_building': row['OBJECTID_building'],
                 'OBJECTID_garden': row['OBJECTID_garden'],
                 'units_e': row['units_e'],
+                'status': row['tichnun_s'],
                 'address': row['address'],
                 'YEUD': row['YEUD'],
                 'Descr': row['Descr'],

@@ -23,6 +23,7 @@ export const strings = {
         he: 'סטטוס',
         en: 'Status'
     },
+    
     notAllocated: {
         he: 'לא הוקצה',
         en: 'Not Allocated'
