@@ -1,5 +1,5 @@
 import pyproj
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, MultiPolygon
 from . import distance_walk
 from geojson import FeatureCollection, Feature
 from shapely.geometry import mapping
@@ -205,7 +205,9 @@ def create_not_allocated_layer(not_allocated_buildings):
                 'OBJECTID': row['OBJECTID'],
                 'units_e': row['units_e'],
                 'address': row['address'],
-                'gen_status': row['gen_status']
+                'gen_status': row['gen_status'],
+                'status': row['tichnun_s'],
+                              
             }
         )
         features.append(new_feature)
@@ -279,13 +281,25 @@ def calculate_stats(buildings_gdf, allocated_buildings_gdf):
 
 def cut_polygons_by_intersection(gdf, polygon_P):
     
-    # Function to cut and update a single polygon
     def cut_polygon(row):
         if row['geometry'].intersects(polygon_P):
             new_geometry = row['geometry'].intersection(polygon_P)
-            utm_polygon = Polygon([transform(wgs84, utm, lon, lat) for lon, lat in new_geometry.exterior.coords])
+            print(new_geometry, type(new_geometry))
+            
+            if isinstance(new_geometry, MultiPolygon):
+                # Handle MultiPolygon case
+                utm_polygons = [Polygon([transform(wgs84, utm, lon, lat) for lon, lat in poly.exterior.coords]) 
+                                for poly in new_geometry.geoms]
+                new_area = sum(poly.area for poly in utm_polygons)
+            elif isinstance(new_geometry, Polygon):
+                # Handle single Polygon case
+                utm_polygon = Polygon([transform(wgs84, utm, lon, lat) for lon, lat in new_geometry.exterior.coords])
+                new_area = utm_polygon.area
+            else:
+                # Handle other geometry types if needed
+                print(f"Unexpected geometry type: {type(new_geometry)}")
+                return row
 
-            new_area = utm_polygon.area
             # Create a new row with updated geometry and area
             updated_row = row.copy()
             updated_row['geometry'] = new_geometry

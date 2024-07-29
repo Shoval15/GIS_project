@@ -12,7 +12,7 @@ from Services import heat
 
 
 DEBUGGING = False
-IMPORT_CACHE = False
+IMPORT_CACHE = True
 
 app = Flask(__name__)
 CORS(app) 
@@ -86,32 +86,35 @@ def get_bounds():
                             'gardens_layer': gardens_layer
                         }})
     if IMPORT_CACHE:   
-        buildings_gdf = gpd.read_file(r".\Services\myCache\data\buildings.geojson")
-        renewal_gdf = gpd.read_file(r".\Services\myCache\data\renewal.geojson")
-        gardens_gdf = gpd.read_file(r".\Services\myCache\data\gardens.geojson")
+        buildings_gdf = gpd.read_file(r".\Services\myCache\data3\buildings.geojson")
+        renewal_gdf = gpd.read_file(r".\Services\myCache\data3\renewal.geojson")
+        gardens_gdf = gpd.read_file(r".\Services\myCache\data3\gardens.geojson")
     else:
         buildings_gdf = import_data.import_buildings(bounds_polygon, polygon)        
-        
+        buildings_gdf.to_file(r".\Services\myCache\data4\buildings.geojson", driver="GeoJSON")
+
         if buildings_gdf.empty:
             return jsonify({"status": "failed", "received": data, "response": "importLayer"})
         
         gardens_gdf = import_data.import_gardens(bounds_polygon, polygon)
+        gardens_gdf.to_file(r".\Services\myCache\data4\gardens.geojson", driver="GeoJSON")
 
         if gardens_gdf.empty :
             return jsonify({"status": "failed", "received": data, "response": "importLayer"})
             
         renewal_gdf = import_data.import_urban_renewal(bounds_polygon, polygon)
+        renewal_gdf.to_file(r".\Services\myCache\data4\renewal.geojson", driver="GeoJSON")
 
     building_old_and_new_gdf = import_data.union_building_and_renewal(buildings_gdf, renewal_gdf)
     walking_paths = import_data.import_walking_paths(polygon)
     if walking_paths is None:
         return jsonify({"status": "failed", "received": data, "response": "importLayer"})
 
-    merged_allocation, not_allocated_gdf, allocation_stats, gardens_gdf = greedy_algorithm_topo.garden_centric_allocation(
-        building_old_and_new_gdf, gardens_gdf, walking_paths, distance, apartment_type, project_status, meters_for_resident, residents)
-    # merged_allocation, not_allocated_gdf, allocation_stats, gardens_gdf = knapsack_problem.garden_centric_allocation(
+    # merged_allocation, not_allocated_gdf, allocation_stats, gardens_gdf = greedy_algorithm_topo.garden_centric_allocation(
     #     building_old_and_new_gdf, gardens_gdf, walking_paths, distance, apartment_type, project_status, meters_for_resident, residents)
-    heat.create_heat(merged_allocation,not_allocated_gdf, gardens_gdf )
+    merged_allocation, not_allocated_gdf, allocation_stats, gardens_gdf = knapsack_problem.garden_centric_allocation(
+        building_old_and_new_gdf, gardens_gdf, walking_paths, distance, apartment_type, project_status, meters_for_resident, residents)
+    # heat.create_heat(merged_allocation,not_allocated_gdf, gardens_gdf )
     allocated_layer = utilities.create_allocated_layer(merged_allocation)
     not_allocated_layer = utilities.create_not_allocated_layer(not_allocated_gdf)
     gardens_layer = utilities.create_gardens_layer(gardens_gdf)
@@ -125,4 +128,4 @@ def get_bounds():
                     }})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
